@@ -1,19 +1,12 @@
-import strutils
+import strutils, macros
+import math
+static:
+    const MAX_VEC_SIZE:int = 4
 type
-    Vec1[T] = object
-        a:array[1,T]
-    Vec2[T] = object
-        a:array[2,T]
-    Vec3[T] = object 
-        a:array[3,T]
-    Vec4[T] = object 
-        a:array[4,T]
-    Mat2[T] = object 
-        a:array[2*2,T]
-    Mat3[T] = object 
-        a:array[3*3,T]
-    Mat4[T] = object 
-        a:array[4*4,T]
+    Vec1[T]= distinct array[1,T]
+    Vec2[T]= distinct array[2,T]
+    Vec3[T]= distinct array[3,T]
+    Vec4[T]= distinct array[4,T]
 
 proc `$`*[T](a:openArray[T]):string=
     var 
@@ -21,113 +14,110 @@ proc `$`*[T](a:openArray[T]):string=
     for i in a:
         strs.add( $i);
     return [ "[" ,strs.join(", "),"]" ].join
+proc zipWith[I,F,T](a, b:array[I,F], op:proc(a,b:F):T):array[I,T]=
+    for i in low(a) .. high(a):
+        result[i] = op(a[i],b[i])
+template toA( v:expr, i:int, T:typedesc):expr=
+    array[i,T](v)
 
-proc `$`*[T](v:Vec1[T]):string= $v.a
-proc `$`*[T](v:Vec2[T]):string= $v.a
-proc `$`*[T](v:Vec3[T]):string= $v.a
-proc `$`*[T](v:Vec4[T]):string= $v.a
-proc `$`*[T](v:Mat2[T]):string= $v.a
-proc `$`*[T](v:Mat3[T]):string= $v.a
-proc `$`*[T](v:Mat4[T]):string= $v.a
+macro mkMathPerComponent():stmt=
+    let ops = ['+', '-', '/', '*']
+    result = newNimNode(nnkStmtList);
+    for i in 1..MAX_VEC_SIZE:
+        for op in ops:
+            var str:string = "proc `$1`[T](v,u:$2[T]):$2[T]= $2(zipWith( v.toA($3,T), u.toA($3,T), proc(a,b:T):T=a$1b))"%[$op, "Vec$#"%[$i], $i]
+            result.add(parseStmt(str ))
 
-proc `[]`*[T](v:Vec1[T], idx:int):T=v.a[idx]
-proc `[]`*[T](v:Vec2[T], idx:int):T=v.a[idx]
-proc `[]`*[T](v:Vec3[T], idx:int):T=v.a[idx]
-proc `[]`*[T](v:Vec4[T], idx:int):T=v.a[idx]
-proc `[]`*[T](v:Mat2[T], idx:int):T=v.a[idx]
-proc `[]`*[T](v:Mat3[T], idx:int):T=v.a[idx]
-proc `[]`*[T](v:Mat4[T], idx:int):T=v.a[idx]
+macro mkToStr():stmt=
+    result = newNimNode(nnkStmtList);
+    for i in 1..MAX_VEC_SIZE:
+        result.add(parseStmt("proc `$$`[T](v:Vec$1[T]):string=  $$ array[$1, T](v)" % [ $i ]))
 
-proc `[]=`*[T](v:var Vec1[T], x:int, c:T)=`[]=`(v.a, x..x,[c])
-proc `[]=`*[T](v:var Vec2[T], x:int, c:T)=`[]=`(v.a, x..x,[c])
-proc `[]=`*[T](v:var Vec3[T], x:int, c:T)=`[]=`(v.a, x..x,[c])
-proc `[]=`*[T](v:var Vec4[T], x:int, c:T)=`[]=`(v.a, x..x,[c])
-proc `[]=`*[T](v:var Mat2[T], x:int, c:T)=`[]=`(v.a, x..x,[c])
-proc `[]=`*[T](v:var Mat3[T], x:int, c:T)=`[]=`(v.a, x..x,[c])
-proc `[]=`*[T](v:var Mat4[T], x:int, c:T)=`[]=`(v.a, x..x,[c])
+macro arrSetters():stmt=
+    result = newNimNode(nnkStmtList);
+    for i in 1..MAX_VEC_SIZE:
+        result.add(parseStmt("proc `[]=`[T](v:Vec$1[T], ix:int, c:T) = array[$1,T](v)[ix]=c" % [$i] ))
 
-proc addr*[T](v:var Vec1[T]):ptr T= addr v.a[0]
-proc addr*[T](v:var Vec2[T]):ptr T= addr v.a[0]
-proc addr*[T](v:var Vec3[T]):ptr T= addr v.a[0]
-proc addr*[T](v:var Vec4[T]):ptr T= addr v.a[0]
-proc addr*[T](v:var Mat2[T]):ptr T= addr v.a[0]
-proc addr*[T](v:var Mat3[T]):ptr T= addr v.a[0]
-proc addr*[T](v:var Mat4[T]):ptr T= addr v.a[0]
+macro arrGetters():stmt=
+    result = newNimNode(nnkStmtList);
+    for i in 1..MAX_VEC_SIZE:
+        result.add(parseStmt("proc `[]`[T](v:Vec$1[T], ix:int):T = array[$1,T](v)[ix]" % [$i] ))
 
-# literal constructors
-proc vec1*[T](x:T):Vec1[T]= Vec1[T](a:[x])
-proc vec1*():Vec1[float]= Vec1[float](a:[0.float])
-proc vec2*[T](x,y:T):Vec2[T]= Vec2[T](a:[x,y])
-proc vec2*[T](x:T):Vec2[T]= Vec2[T](a:[x,x])
-proc vec2*():Vec2[float]= vec2(0.float)
-proc vec3*[T](x,y,z:T):Vec3[T]= Vec3[T](a:[x,y,z])
-proc vec3*[T](x:T):Vec3[T]= Vec3[T](a:[x,x,x])
-proc vec3*():Vec3[float]= vec3(0.float)
-proc vec4*[T](x,y,z,w:T):Vec4[T]= Vec4[T](a:[x,y,z,w])
-proc vec4*[T](x:T):Vec4[T]= Vec4[T](a:[x,x,x,x])
-proc vec4*():Vec4[float]= vec4(0.float)
-# complex constructors
-proc vec1*[T](v:Vec1[T]):Vec1[T]= vec1(v[0])
-proc vec2*[T](v:Vec2[T]):Vec2[T]= vec2(v[0],v[1])
-proc vec3*[T](v:Vec3[T]):Vec3[T]= vec3(v[0],v[1],v[2])
-proc vec4*[T](v:Vec4[T]):Vec4[T]= vec4(v[0],v[1],v[2],v[3])
+macro componentGetterSetters():stmt=
+    result = newNimNode(nnkStmtList);
+    let templG = "proc $1[T](v:Vec$2[T]):T=array[$2,T](v)[$3]"
+    let templS = "proc `$1=`[T](v:var Vec$2[T],c:T)=(array[$2,T](v))[$3]=c"
+    let tr = ["x","y","z","w"]
+    let col= ["r","g","b","a"]
+    for i in low(tr)..high(tr):
+        for s in 1..MAX_VEC_SIZE:
+            if i<s:
+                result.add(parseStmt( templS % [tr[i], $s, $i] ))
+                result.add(parseStmt( templG % [tr[i], $s, $i] ))
+                result.add(parseStmt( templS % [col[i], $s, $i] ))
+                result.add(parseStmt( templG % [col[i], $s, $i] ))
+proc pow(a,b:int):int= floor(pow(a.float, b.float)).int
+proc fmod(a,b:int):int=floor(fmod(a.float, b.float)).int
+iterator shifts(minArr,arrLen:int):seq[int]=
+    for S in minArr..MAX_VEC_SIZE:
+        var totCombInLoop = pow(arrLen,S) # Total combinations for alphabet length = arrLen and  selection size = S
+        #echo("Collections:", totCombInLoop)
+        for j in 0..totCombInLoop-1:
+            var cs:seq[int] = @[]
+            for i in 1..S:
+                #echo("$#/$#/$#"%[$j, $(j.fmod(pow(arrLen,i))), $(pow(arrLen,i-1) )])
+                cs.add( floor(j.fmod( pow(arrLen,i) )/pow(arrLen,i-1) ).int )
+            yield cs
 
-proc vec3*[T](v2:Vec2[T], v:T):Vec3[T]= vec3(v2[0], v2[1], v)
-proc vec3*[T](v:T, v2:Vec2[T]):Vec3[T]= vec3(v, v2[0], v2[1])
+macro multiComponentGetterList():stmt=
+    result = newNimNode(nnkStmtList);
+    let comps=["x","y","z","w"]
+    for i in 2..MAX_VEC_SIZE:
+        for combination in shifts(2,i):
+            var getter:seq[string] = @[]
+            var arr:seq[string] = @[]
+            for c in combination:
+                getter.add(comps[c])
+                arr.add("v.$1"% comps[c])
+            var procStr = "proc $1[T](v: Vec$2[T]):Vec$3[T]=Vec$3[T]([$4])" % [getter.join(""), $i, $combination.len, arr.join(",")]
+            result.add(parseStmt( procStr))
 
-proc vec4*[T](v:T, u:T, v2:Vec2[T]):Vec4[T]= vec4(v, u, v2[0], v2[1])
-proc vec4*[T](v:T, v3:Vec3[T]):Vec4[T]= vec4(v, v3[0], v3[1], v3[2])
-proc vec4*[T](v3:Vec3[T], v:T):Vec4[T]= vec4( v3[0], v3[1], v3[2], v)
-proc vec4*[T](v2:Vec2[T], v:T, u:T):Vec4[T]= vec4( v2[0], v2[1], v, u)
-proc vec4*[T](v2:Vec2[T], v22:Vec2[T]):Vec4[T]= vec4( v2[0], v2[1], v22[0], v22[1])
-## TODO Add vec1 to contrustors
+macro constructors():stmt=
+    result = newNimNode(nnkStmtList);
+    var 
+        types:array[MAX_VEC_SIZE+1,string]
+    proc glength(s:string):int=
+        case s
+        of "val", "1": result=1
+        else: result = parseInt(s)
+    types[0] = "val"
+    for i in 1..MAX_VEC_SIZE:
+        types[i] = $i
+        
+            
+    
 
-## GETTERS
-proc x*[T](v:Vec1[T]):T = v[0]
-proc x*[T](v:Vec2[T]):T = v[0]
-proc x*[T](v:Vec3[T]):T = v[0]
-proc x*[T](v:Vec4[T]):T = v[0]
 
-proc y*[T](v:Vec2[T]):T = v[1]
-proc y*[T](v:Vec3[T]):T = v[1]
-proc y*[T](v:Vec4[T]):T = v[1]
 
-proc z*[T](v:Vec3[T]):T = v[2]
-proc z*[T](v:Vec4[T]):T = v[2]
-
-proc w*[T](v:Vec4[T]):T = v[3]
-
-## SETTERS
-proc `x=`*[T](v:var Vec1[T],c:T)= v[0]=c
-proc `x=`*[T](v:var Vec2[T],c:T)= v[0]=c
-proc `x=`*[T](v:var Vec3[T],c:T)= v[0]=c
-proc `x=`*[T](v:var Vec4[T],c:T)= v[0]=c
-
-proc `y=`*[T](v:var Vec2[T],c:T)= v[1]=c
-proc `y=`*[T](v:var Vec3[T],c:T)= v[1]=c
-proc `y=`*[T](v:var Vec4[T],c:T)= v[1]=c
-
-proc `z=`*[T](v:var Vec3[T],c:T)= v[2]=c
-proc `z=`*[T](v:var Vec4[T],c:T)= v[2]=c
-
-proc `w=`*[T](v:var Vec4[T],c:T)= v[3]=c
+mkToStr()
+mkMathPerComponent()
+arrGetters()
+arrSetters()
+componentGetterSetters()
+multiComponentGetterList()
 
 
 if isMainModule:
-    echo vec1(10)
-    echo vec2(10,15)
-    echo vec2(10)
-    echo vec3(10,15,20)
-    echo vec3(0)
-    echo vec4(10,15,20,35)
-    echo vec4(50)
-    var v1 = vec1()
-       
-
-    echo ("B:",v1)
-    v1[0] = 10.0
-    echo ("A:",  v1[0] )
-    v1.x = 5.0;
-    echo repr(addr v1)
-    echo(v1)
-
+    var 
+        v=Vec4([2.0, 3.0, 0.0, 10.0] )
+        v3=Vec3([3.0, 3.0, 3.0])
+        vv = Vec1([1.0])
+        u=Vec4([2.0, 3.0,5.0, 4.5] )
+        a: array[5, float] = [0.0, 1.0, 2.0, 3.0, 4.0]
+        b: array[5, float] = [0.0, 1.0, 2.0, 3.0, 4.0]
+        c = v+u
+        d = v*u
+    v3.g = 4.0
+    var vv4 = v3.yyyy
+    echo ("V3", v3.yyyy)
+    echo ("WHO:$$, $1"%["hi"])
