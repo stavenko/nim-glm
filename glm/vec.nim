@@ -1,4 +1,4 @@
-import strutils, macros
+import strutils, sequtils, macros, algorithm
 import math
 static:
     const MAX_VEC_SIZE:int = 4
@@ -82,20 +82,102 @@ macro multiComponentGetterList():stmt=
             var procStr = "proc $1[T](v: Vec$2[T]):Vec$3[T]=Vec$3[T]([$4])" % [getter.join(""), $i, $combination.len, arr.join(",")]
             result.add(parseStmt( procStr))
 
-macro constructors():stmt=
-    result = newNimNode(nnkStmtList);
-    var 
-        types:array[MAX_VEC_SIZE+1,string]
-    proc glength(s:string):int=
-        case s
-        of "val", "1": result=1
-        else: result = parseInt(s)
-    types[0] = "val"
-    for i in 1..MAX_VEC_SIZE:
-        types[i] = $i
         
-            
+proc getComponentIx(shiftn,length,componentIx:int):int=
+    floor(shiftn.fmod( pow(length,componentIx) )/pow(length,componentIx-1) ).int
     
+proc shifts(data:seq[char]):seq[seq[char]]=
+    
+    var length = data.len;
+    var shifts = pow(length, length)
+    result = @[]
+    
+    for i in 0..shifts-1:
+        var cs:seq[char] = @[]
+        for j in 1..length:
+            cs.add( data[getComponentIx(i, length, j)] )
+        result.add(cs)
+
+proc flatten[T](s:seq[seq[T]]):seq[T]=
+    result = @[]
+    for i in s:
+        result = result &i
+proc getCombinationsForLength(l:int):seq[seq[char]]=
+    var vx:seq[char] = @['V']
+    for i in 1..MAX_VEC_SIZE:
+        var c:char = ($i)[0]
+        vx.add(c)
+    proc glength(s:char):int=
+        case s
+        of 'V', '1': result=1
+        else: result = parseInt($s)
+    var available = vx.filter(proc(x:char):bool=return glength(x) <= l)
+    result = @[]
+    var count = 0;
+    for sym in available.reversed():
+        var res:seq[char] = @[ sym ]
+        count += glength(sym)
+        if count < l:
+            var newSymbols = getCombinationsForLength(l - count)
+            for s in newSymbols:
+                var nres = res.concat(s)
+                result.add(nres)
+            count =0
+        else:
+            count = 0
+            result.add(res);
+
+proc componentGetters(c:char, sm:string):seq[string]=
+    case c
+    of 'V': result = @[sm]
+    else:
+        result = @[]
+        var size = parseInt($c) 
+        for i in 0..size-1:
+            result.add("$1[$2]" % [ sm, $i])
+
+
+proc parameterConstructor(c:char, sm:string):seq[string]=
+    case c
+    of 'V': result = @["$1:T" % [sm] ]
+    else:
+        result = @[]
+        var size = parseInt($c)
+        result.add("$1:Vec$2[T]" % [sm, $size ])
+
+
+macro createConstructors():stmt =
+    result = newNimNode(nnkStmtList);
+    let paramnames = "abcdefghijklomnpo"
+    for vl in 1..MAX_VEC_SIZE:
+        var procStr = "proc vec$1*[$4]($2):Vec$1[$4]=Vec$1([$3])"
+        var procStrU = "proc vec$1*($2):Vec$1[$4]=Vec$1([$3])"
+        # create empty constructor
+        var resultProc = procStrU % [$vl, "", repeat(@["0.0"],vl).join(", "), "float" ]
+        echo resultProc
+        result.add(parseStmt(resultProc))
+        # create one parameter constructor
+        if(vl > 1):
+            resultProc = procStr % [$vl, "a:T", repeat(@["a"],vl).join(", "), "T" ]
+            echo resultProc
+            result.add(parseStmt(resultProc))
+        for combination in getCombinationsForLength(vl):
+            var arrayConstructor:seq[string] = @[]
+            var parameterConstructor:seq[string] = @[]
+            for ix in combination.low..combination.high:
+                for cg in componentGetters(combination[ix], $(paramnames[ix])):
+                    arrayConstructor.add(cg)
+                for pc in parameterConstructor(combination[ix], $(paramnames[ix])):
+                    parameterConstructor.add(pc)
+            var resultProc = procStr % [
+                $vl,
+                parameterConstructor.join(", "),
+                arrayConstructor.join(", "),
+                "T"
+            ]
+            echo resultProc
+            result.add(parseStmt( resultProc) )
+
 
 
 
@@ -105,19 +187,5 @@ arrGetters()
 arrSetters()
 componentGetterSetters()
 multiComponentGetterList()
-
-
-if isMainModule:
-    var 
-        v=Vec4([2.0, 3.0, 0.0, 10.0] )
-        v3=Vec3([3.0, 3.0, 3.0])
-        vv = Vec1([1.0])
-        u=Vec4([2.0, 3.0,5.0, 4.5] )
-        a: array[5, float] = [0.0, 1.0, 2.0, 3.0, 4.0]
-        b: array[5, float] = [0.0, 1.0, 2.0, 3.0, 4.0]
-        c = v+u
-        d = v*u
-    v3.g = 4.0
-    var vv4 = v3.yyyy
-    echo ("V3", v3.yyyy)
-    echo ("WHO:$$, $1"%["hi"])
+createConstructors()
+    
