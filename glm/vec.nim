@@ -4,6 +4,7 @@ static:
     const MAX_VEC_SIZE*:int = 4
 
 
+
 defineVectorTypes(MAX_VEC_SIZE)
 mkToStr(MAX_VEC_SIZE)
 mkMathPerComponent(MAX_VEC_SIZE)

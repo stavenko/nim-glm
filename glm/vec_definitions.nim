@@ -2,11 +2,27 @@ import strutils
 import sequtils
 import macros
 import algorithm
-import math
+import math as m
 
 import arrayUtils
 
 export arrayUtils
+
+#compile-time strongly inefficient math functions
+proc floor(f:float):float=f.int.float
+proc round(f:float):float=
+    var flo = f.floor
+    var d = f - flo
+    if d >= 0.5: result = flo + 1.0
+    else: result = flo
+
+proc pow(a,b:float):float=
+    result  = 1;
+    for i in 1..b.int:
+        result *= a
+proc `fmod`(a,b:float):float=
+    var diff = floor(a/b)*b
+    return a-diff
 
 macro defineVectorTypes*(upTo:int):stmt=
     var upToVec:int = intVal(upTo).int
@@ -60,6 +76,7 @@ macro componentGetterSetters*(upTo:int):stmt=
                 result.add(parseStmt( templG % [tr[i], $s, $i] ))
                 result.add(parseStmt( templS % [col[i], $s, $i] ))
                 result.add(parseStmt( templG % [col[i], $s, $i] ))
+    
 proc pow(a,b:int):int= floor(pow(a.float, b.float)).int
 proc fmod(a,b:int):int=floor(fmod(a.float, b.float)).int
 iterator shifts(minArr,arrLen,upToVec:int):seq[int]=
@@ -137,7 +154,7 @@ proc componentGetters(c:char, sm:string):seq[string]=
     of 'V': result = @[sm]
     else:
         result = @[]
-        var size = parseInt($c) 
+        var size = parseInt($c)
         for i in 0..size-1:
             result.add("$1[$2]" % [ sm, $i])
 
@@ -182,3 +199,7 @@ macro createConstructors*(upTo:int):stmt =
             result.add(parseStmt( resultProc) )
 
 
+
+
+if isMainModule:
+    echo "FF", `fmod`(3.0, 0.1)
