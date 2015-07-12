@@ -5,7 +5,7 @@ static:
     const
         MIN_MATRIX_SIZE:int = 2
         MAX_MATRIX_SIZE:int = MAX_VEC_SIZE
-acro defineMatrixTypes():stmt=
+macro defineMatrixTypes():stmt=
     result = newNimNode(nnkStmtList);
     for col in MIN_MATRIX_SIZE .. MAX_MATRIX_SIZE:
         for row in MIN_MATRIX_SIZE .. MAX_MATRIX_SIZE:

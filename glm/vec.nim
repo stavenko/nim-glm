@@ -1,5 +1,7 @@
 import vec_definitions
 import strutils
+import sequtils
+import math 
 static:
     const MAX_VEC_SIZE*:int = 4
 
@@ -13,8 +15,20 @@ arrSetters(MAX_VEC_SIZE)
 componentGetterSetters( MAX_VEC_SIZE )
 multiComponentGetterList( MAX_VEC_SIZE )
 createConstructors( MAX_VEC_SIZE )
-    
+createScalarOperations(MAX_VEC_SIZE)
+createDotProduct(MAX_VEC_SIZE)
+createLengths(MAX_VEC_SIZE)
+
+proc cross*[T](x,y:Vec3[T]):Vec3[T]=
+    vec3(x.y * y.z - y.y * x.z,
+         x.z * y.x - y.z * x.x,
+         x.x * y.y - y.x * x.y)
+
 if isMainModule:
-    var v = vec4()
-    echo "Should not use this as main module", v
+    var v = vec3(1.0, 0.5, 0)
+    var u = vec3(1.0, 1.0, 0)
+    var c = cross(v,u)
+    echo "Should not use this as main module: $# [$#, $#]" % [$c , $dot(c,v), $dot(c,u)]
+    var arr = [1,2,3]
+
 

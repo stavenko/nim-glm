@@ -32,7 +32,7 @@ macro defineVectorTypes*(upTo:int):stmt=
         result.add(parseStmt(def))
 
 
-template toA( v:expr, i:int, T:typedesc):expr=
+template toA*( v:expr, i:int, T:typedesc):expr=
     array[i,T](v)
 
 macro mkMathPerComponent*(upTo:int):stmt=
@@ -54,7 +54,7 @@ macro arrSetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
     result = newNimNode(nnkStmtList);
     for i in 1..upToVec:
-        result.add(parseStmt("proc `[]=`*[T](v:Vec$1[T], ix:int, c:T) = array[$1,T](v)[ix]=c" % [$i] ))
+        result.add(parseStmt("proc `[]=`*[T](v:var Vec$1[T], ix:int, c:T) = array[$1,T](v)[ix]=c" % [$i] ))
 
 macro arrGetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
@@ -199,7 +199,41 @@ macro createConstructors*(upTo:int):stmt =
             result.add(parseStmt( resultProc) )
 
 
+proc `*`*[T](a:var array[3,T], s:T)=
+    for i in 0..2: a[i] *= s
+    
 
 
-if isMainModule:
-    echo "FF", `fmod`(3.0, 0.1)
+macro createScalarOperations*(upTo:int):stmt=
+    let upToVec = intVal(upTo).int
+    let ops = ["+", "-", "/", "*"]
+    result = newNimNode(nnkStmtList);
+    for vs in 1 .. upToVec:
+        for op in ops:
+            var procs = "proc `$1`*[T](a:Vec$2[T], s:T):Vec$2[T]=Vec$2(map(array[$2,T](a), proc(a:T):T=a $1 s))" % [ op, $vs ]
+            var inlProcs = """proc `$1=`*[T](a:var Vec$2[T], s:T)=
+            for i in 0..$2-1:
+                a[i] = a[i] $1 s """ % [ op, $vs ]
+            result.add(parseStmt(procs))
+            result.add(parseStmt(inlProcs))
+
+            echo inlProcs
+
+macro createDotProduct*(upTo:int):stmt=
+    result = newNimNode(nnkStmtList);
+    for i  in 1..upTo.intVal.int:
+        let dotProducts = "proc dot*[T](a,b:Vec$1[T]):T=sum(toA(a*b,$1,T))" % [ $i ]
+        result.add(parseStmt(dotProducts))
+
+
+
+macro createLengths*(upTo:int):stmt=
+    result = newNimNode(nnkStmtList);
+    for i  in 1..upTo.intVal.int:
+        let l2s = "proc len2*[T](a:Vec$1[T]):T=sum(toA(a*a,$1,T))" % [ $i ]
+        let ls = "proc len*[T](a:Vec$1[T]):T=sqrt(a.len2)" % [ $i ]
+        result.add(parseStmt(l2s))
+        result.add(parseStmt(ls))
+
+
+
