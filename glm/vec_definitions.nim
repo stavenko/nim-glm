@@ -28,7 +28,7 @@ macro defineVectorTypes*(upTo:int):stmt=
     var upToVec:int = intVal(upTo).int
     result = newNimNode(nnkStmtList);
     for i in 1 .. upToVec:
-        var def = "type Vec$1[T] = distinct array[$1, T]" % [$i]
+        var def = "type Vec$1*[T] = distinct array[$1, T]" % [$i]
         result.add(parseStmt(def))
 
 

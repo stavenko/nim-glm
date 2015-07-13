@@ -3,23 +3,10 @@ import arrayUtils
 import mat_definitions
 import vec
 
-<<<<<<< HEAD
 static:
     const
         MIN_MATRIX_SIZE:int = 2
         MAX_MATRIX_SIZE:int = MAX_VEC_SIZE
-macro defineMatrixTypes():stmt=
-    result = newNimNode(nnkStmtList);
-    for col in MIN_MATRIX_SIZE .. MAX_MATRIX_SIZE:
-        for row in MIN_MATRIX_SIZE .. MAX_MATRIX_SIZE:
-            var def = "type Mat$1x$2[T] = distinct array[$1, Vec$2[T]]" % [$col, $row]
-            result.add(parseStmt(def))
-=======
-const
-    MIN_MATRIX_SIZE:int = 2
-    MAX_MATRIX_SIZE:int = MAX_VEC_SIZE
->>>>>>> matrix types
-
 
 defineMatrixTypes(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
