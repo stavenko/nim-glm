@@ -10,8 +10,11 @@ static:
 
 defineMatrixTypes(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixEchos(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+columnGetters(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+columnSetters(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+addrGetter(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
-
+emptyConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
 
 
@@ -38,3 +41,10 @@ matrixConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 #var sz = sizeof(float32)
 
 #echo "ptr:", (m[0]).repr
+if isMainModule:
+    var m= mat4x4();
+    var v = vec4(5.0);
+    echo "matrix", m[2];
+    m[0] = v
+    echo "MM", m
+    echo "MMA", repr(m.addr)
