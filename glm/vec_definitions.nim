@@ -82,11 +82,9 @@ proc fmod(a,b:int):int=floor(fmod(a.float, b.float)).int
 iterator shifts(minArr,arrLen,upToVec:int):seq[int]=
     for S in minArr..upToVec:
         var totCombInLoop = pow(arrLen,S) # Total combinations for alphabet length = arrLen and  selection size = S
-        #echo("Collections:", totCombInLoop)
         for j in 0..totCombInLoop-1:
             var cs:seq[int] = @[]
             for i in 1..S:
-                #echo("$#/$#/$#"%[$j, $(j.fmod(pow(arrLen,i))), $(pow(arrLen,i-1) )])
                 cs.add( floor(j.fmod( pow(arrLen,i) )/pow(arrLen,i-1) ).int )
             yield cs
 
@@ -217,7 +215,6 @@ macro createScalarOperations*(upTo:int):stmt=
             result.add(parseStmt(procs))
             result.add(parseStmt(inlProcs))
 
-            echo inlProcs
 
 macro createDotProduct*(upTo:int):stmt=
     result = newNimNode(nnkStmtList);
