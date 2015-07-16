@@ -47,6 +47,16 @@ macro columnSetters*(minSize, maxSize:int):stmt=
             var def = procT % [ $col, $row]
             echo def
             result.add(parseStmt(def))
+macro matrixScalarOperations*(minSize, maxSize:int):stmt=
+    macroInit(m, M)
+    let procT = "proc `$3`*[T](m:var Mat$1x$2[T], s:T):Mat$1x$2[T]=" & 
+                 "Mat$1x$2(map(array[$1,Vec$2[T]](m),proc(v:Vec$2[T]):Vec$2[T]= v $3 s))" 
+    for op in ["+", "-", "*", "/"]:
+        for col in m..M:
+            for row in m .. M:
+                var def = procT % [ $col, $row, op ]
+                echo def
+                result.add(parseStmt(def))
 
 
 # we need matrix constructors
@@ -98,4 +108,15 @@ macro emptyConstructors*(minSize, maxSize:int):stmt=
                 result.add(parseStmt(f))
             result.add(parseStmt(matProc));
 
-    
+macro matrixMultiplication*(minSize, maxSize:int):stmt=
+    macroInit(m,M)
+    let Template = "proc `*`*[T](a:Mat$1x$2[T], b:Mat$2x$3[T]):Mat$1x$3[T]=" &
+                        "matProduct(array[$1, array[$2,T]](a), array[$2,array[$3,T]](b) )"
+    for col1 in m..M:
+        for col2 in m..M:
+            for row1 in m..M:
+                for row2 in m..M:
+                    if(row1 == col2):
+                        var def = Template % [$col1, $row1, $col2] 
+                        echo def
+            
