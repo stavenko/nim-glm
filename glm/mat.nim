@@ -101,33 +101,29 @@ proc inverse*[T](m:var Mat4x4[T]):Mat4x4[T]=
         OneOverDeterminant = (1.T) / Dot1
     result = Inverse * OneOverDeterminant
 
+fromArray(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixMultiplication(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
-#proc `$`*[T](m:Mat4x4[T]):string = $ array[4, array[4,T]](m)
-#proc addr[T](m:var Mat4x4[T]):ptr T = array[4, array[4,T]](m)[0][0].addr
-#proc `[]=`[T](m:var Mat4x4[T], ix:int, c: Vec4[T])= array[4, Vec4[T]](m)[ix]=c
-#proc `[]`[T](m:var Mat4x4[T], ix:int):var Vec4[T]= array[4, Vec4[T]](m)[ix]
+matrixVectorMultiplication(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
 
-#var
-    #c:float32=0.0
-    #col = vec4(5.0.float32)
-    #m:Mat4x4[float32] = Mat4x4([col, col, col, col])
+matrixUnaryScalarOperations(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+#proc mat4x4*[T](a:array[4,array[4,T]]):Mat4x4[T]=
+    #Mat4x4([Vec4(a[0]), Vec4(a[1]), Vec4(a[2]), Vec4(a[3])])
 
-#for i in 0..3:
-    #c += 1.0;
-    #m[i] = vec4(c)
+#proc `*`*[T](a:Mat4x4[T], b:Mat4x4[T]):Mat4x4[T]=
+    #matProduct(array[4, array[4,T]](a), array[4,array[4,T]](b)).mat4x4
 
-
-#echo "mat:", m
-#var mPtr = m.addr
-#var imPtr:int =cast[int](mPtr)
-#var sz = sizeof(float32)
-
-#echo "ptr:", (m[0]).repr
 if isMainModule:
-    var m= mat4x4();
-    var m2 = mat2(vec2(3.float,1), vec2(1.float,2));
-    var v = vec4(5.0);
-    echo "im",m2, inverse(m2)
-    echo "MMA", repr(m.addr)
+
+    var m22 = mat3(vec3(1.0, 0, 0), vec3(0.0,1,0), vec3(0.0,0.0,1))
+    var v2  = vec3(2.0)
+
+    var m1 = mat4x3(vec3( 5, 6,8),vec3(1,1,1), vec3(0,0,1), vec3(5,5,5))
+    var m2 = mat3x4(vec4( 1, 1,1,1),vec4(1,1,1,1),  vec4(3,3,3,3))
+    var m4 = m2 * m1
+
+    m22 *= 3
+    echo m22
+    
+    echo v2 * m22

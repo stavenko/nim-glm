@@ -11,7 +11,6 @@ macro defineMatrixTypes*(minSize,maxSize: int):stmt=
     for col in  m .. M:
         for row in m .. M:
             var def = "type Mat$1x$2[T] = distinct array[$1, Vec$2[T]]" % [$col, $row]
-            echo def
             result.add(parseStmt(def))
 
 macro matrixEchos*(minSize, maxSize:int):stmt=
@@ -19,7 +18,6 @@ macro matrixEchos*(minSize, maxSize:int):stmt=
     for col in m..M:
         for row in m .. M:
             var def = "proc `$$`*[T](m:Mat$1x$2[T]):string = $$ array[$1, array[$2,T]](m)" % [$col, $row]
-            echo def
             result.add(parseStmt(def))
 
 macro addrGetter*(minSize, maxSize:int):stmt=
@@ -28,7 +26,6 @@ macro addrGetter*(minSize, maxSize:int):stmt=
     for col in m..M:
         for row in m .. M:
             var def = procT % [ $col, $row]
-            echo def
             result.add(parseStmt(def))
 macro columnGetters*(minSize, maxSize:int):stmt=
     macroInit(m, M)
@@ -36,7 +33,6 @@ macro columnGetters*(minSize, maxSize:int):stmt=
     for col in m..M:
         for row in m .. M:
             var def = procT % [ $col, $row]
-            echo def
             result.add(parseStmt(def))
             
 macro columnSetters*(minSize, maxSize:int):stmt=
@@ -45,11 +41,11 @@ macro columnSetters*(minSize, maxSize:int):stmt=
     for col in m..M:
         for row in m .. M:
             var def = procT % [ $col, $row]
-            echo def
             result.add(parseStmt(def))
+
 macro matrixScalarOperations*(minSize, maxSize:int):stmt=
     macroInit(m, M)
-    let procT = "proc `$3`*[T](m:var Mat$1x$2[T], s:T):Mat$1x$2[T]=" & 
+    let procT = "proc `$3`*[T](m:Mat$1x$2[T], s:T):Mat$1x$2[T]=" &
                  "Mat$1x$2(map(array[$1,Vec$2[T]](m),proc(v:Vec$2[T]):Vec$2[T]= v $3 s))" 
     for op in ["+", "-", "*", "/"]:
         for col in m..M:
@@ -57,7 +53,23 @@ macro matrixScalarOperations*(minSize, maxSize:int):stmt=
                 var def = procT % [ $col, $row, op ]
                 echo def
                 result.add(parseStmt(def))
+macro matrixUnaryScalarOperations*(minSize, maxSize:int):stmt=
+    macroInit(m,M)
+    let opT = "    m[$1][$2]= m[$1][$2] $3  s"
+    let T = "proc `$3=`*[T](m:var Mat$1x$2[T], s:T)=\n    var a = array[$1,array[$2,T]](m)\n"
+    
+    for op in ["+", "-", "*", "/"]:
+        for col in m..M:
+            for row in m..M:
+                var mm:seq[string] = @[]
+                var def = T % [$col, $row, op]
+                for i in 0..col-1:
+                    for j in 0..row-1:
+                        mm.add(opT % [$i, $j, op])
+                def &= mm.join("\n")
+                result.add(parseStmt(def))
 
+                
 
 # we need matrix constructors
 macro matrixConstructors*(minSize, maxSize:int):stmt=
@@ -78,14 +90,12 @@ macro matrixConstructors*(minSize, maxSize:int):stmt=
                                                $row,
                                                finput,
                                                fvecs.join(", ") ]
-                echo constr
                 result.add(parseStmt(constr))
 
             let constr = procTemplate % [ $col,
                                           $row,
                                           finput,
                                           fvecs.join(", ") ]
-            echo constr
             result.add(parseStmt(constr))
 macro emptyConstructors*(minSize, maxSize:int):stmt=
     macroInit(m,M)
@@ -104,19 +114,48 @@ macro emptyConstructors*(minSize, maxSize:int):stmt=
             let matProc =  fullTemplate % [$col, $row, vecs.join(", ")]
             if col == row:
                 let f = partialTemplate % [$col, $row, vecs.join(", ")]
-                echo f
                 result.add(parseStmt(f))
-            result.add(parseStmt(matProc));
+            result.add(parseStmt(matProc))
+
+macro fromArray*(minSize, maxSize:int):stmt=
+    macroInit(m, M)
+    var T = "proc mat$1x$2*[T](a:array[$1,array[$2,T]]):Mat$1x$2[T]=Mat$1x$2([$3])"
+    var Tv = "Vec$1(a[$2])"
+    for col in m..M:
+        for row in m..M:
+            var vectors:seq[string] = @[]
+            for c in 0..col-1:
+                vectors.add(Tv % [ $row, $c])
+
+            var def = T% [ $col, $row, vectors.join(", ") ]
+            result.add(parseStmt( def ))
+
+
+
 
 macro matrixMultiplication*(minSize, maxSize:int):stmt=
     macroInit(m,M)
     let Template = "proc `*`*[T](a:Mat$1x$2[T], b:Mat$2x$3[T]):Mat$1x$3[T]=" &
-                        "matProduct(array[$1, array[$2,T]](a), array[$2,array[$3,T]](b) )"
-    for col1 in m..M:
-        for col2 in m..M:
-            for row1 in m..M:
-                for row2 in m..M:
-                    if(row1 == col2):
-                        var def = Template % [$col1, $row1, $col2] 
-                        echo def
+                        "matProduct(array[$1, array[$2,T]](a), array[$2,array[$3,T]](b)).mat$1x$3"
+    var tuples:seq[tuple[c:int,r:int]] = @[]
+    for col in m..M:
+        for row in m..M:
+            tuples.add( (col, row) )
+    for l in tuples:
+        for r in tuples:
+            if l.r == r.c:
+                var def = Template % [$l.c, $l.r, $r.r]
+                result.add(parseStmt( def ));
             
+macro matrixVectorMultiplication*(minSize, maxSize:int):stmt=
+    macroInit(m,M)
+    let Tv = "proc `*`*[T](m:Mat$1x$2[T], v:Vec$1[T]):Vec$2[T]=Vec$2(matVecProduct( array[$1,array[$2,T]](m), array[$1,T](v)))"
+    let vT = "proc `*`*[T](v:Vec$2[T], m:Mat$1x$2[T] ):Vec$1[T]=Vec$1(matVecProduct(array[$2,T](v), array[$1,array[$2,T]](m)))"
+    for col in m..M:
+        for row in m..M:
+            let def1 = Tv % [ $col, $row ]
+            let def2 = vT % [ $col, $row ]
+            result.add(parseStmt( def1 ));
+            result.add(parseStmt( def2 ));
+
+
