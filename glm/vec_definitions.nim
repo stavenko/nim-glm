@@ -5,9 +5,8 @@ import algorithm
 import math as m
 
 import arrayUtils
-
 export arrayUtils
-
+#
 #compile-time strongly inefficient math functions
 proc floor(f:float):float=f.int.float
 proc round(f:float):float=
@@ -206,15 +205,18 @@ macro createScalarOperations*(upTo:int):stmt=
     let upToVec = intVal(upTo).int
     let ops = ["+", "-", "/", "*"]
     result = newNimNode(nnkStmtList);
+    let T = "proc `$1`*[T](a:Vec$2[T], s:T):Vec$2[T]=Vec$2(map(array[$2,T](a), proc(a:T):T=a $1 s))"
+    let Tv = "proc `$1`*[T](s:T, a:Vec$2[T]):Vec$2[T]=Vec$2(map(array[$2,T](a), proc(a:T):T=a $1 s))"
     for vs in 1 .. upToVec:
         for op in ops:
-            var procs = "proc `$1`*[T](a:Vec$2[T], s:T):Vec$2[T]=Vec$2(map(array[$2,T](a), proc(a:T):T=a $1 s))" % [ op, $vs ]
+            var procs = T % [ op, $vs ]
+            var backProcs = Tv %[ op, $vs]
             var inlProcs = """proc `$1=`*[T](a:var Vec$2[T], s:T)=
             for i in 0..$2-1:
                 a[i] = a[i] $1 s """ % [ op, $vs ]
             result.add(parseStmt(procs))
+            result.add(parseStmt(backProcs))
             result.add(parseStmt(inlProcs))
-
 
 macro createDotProduct*(upTo:int):stmt=
     result = newNimNode(nnkStmtList);
@@ -222,13 +224,11 @@ macro createDotProduct*(upTo:int):stmt=
         let dotProducts = "proc dot*[T](a,b:Vec$1[T]):T=sum(toA(a*b,$1,T))" % [ $i ]
         result.add(parseStmt(dotProducts))
 
-
-
 macro createLengths*(upTo:int):stmt=
     result = newNimNode(nnkStmtList);
     for i  in 1..upTo.intVal.int:
-        let l2s = "proc len2*[T](a:Vec$1[T]):T=sum(toA(a*a,$1,T))" % [ $i ]
-        let ls = "proc len*[T](a:Vec$1[T]):T=sqrt(a.len2)" % [ $i ]
+        let l2s = "proc length2*[T](a:Vec$1[T]):T=sum(toA(a*a,$1,T))" % [ $i ]
+        let ls = "proc length*[T](a:Vec$1[T]):T=sqrt(a.length2)" % [ $i ]
         result.add(parseStmt(l2s))
         result.add(parseStmt(ls))
 

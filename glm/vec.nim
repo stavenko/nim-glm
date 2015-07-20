@@ -1,4 +1,5 @@
 import vec_definitions
+import function_geometric_macros
 import strutils
 import sequtils
 import math 
@@ -23,6 +24,8 @@ proc cross*[T](x,y:Vec3[T]):Vec3[T]=
     vec3(x.y * y.z - y.y * x.z,
          x.z * y.x - y.z * x.x,
          x.x * y.y - y.x * x.y)
+
+normalizeMacros(MAX_VEC_SIZE)
 
 if isMainModule:
     var v = vec3(1.0, 0.5, 0)

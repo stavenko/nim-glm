@@ -15,6 +15,7 @@ columnSetters(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 addrGetter(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 emptyConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+diagonalConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixScalarOperations(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
 proc inverse*[T](m:var Mat2x2[T]):Mat2x2[T]=
@@ -103,11 +104,9 @@ proc inverse*[T](m:var Mat4x4[T]):Mat4x4[T]=
 
 fromArray(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixMultiplication(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
-
 matrixVectorMultiplication(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
-
-
 matrixUnaryScalarOperations(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+
 #proc mat4x4*[T](a:array[4,array[4,T]]):Mat4x4[T]=
     #Mat4x4([Vec4(a[0]), Vec4(a[1]), Vec4(a[2]), Vec4(a[3])])
 
@@ -116,14 +115,14 @@ matrixUnaryScalarOperations(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
 if isMainModule:
 
-    var m22 = mat3(vec3(1.0, 0, 0), vec3(0.0,1,0), vec3(0.0,0.0,1))
+    var m22 = mat3(vec3(1.0, 5, 10), vec3(0.66,1,70), vec3(10.0,2.0,1))
     var v2  = vec3(2.0)
+    var m22i = inverse(m22)
+    var v2m = v2 * m22
+    var v2r = v2m * m22i
 
-    var m1 = mat4x3(vec3( 5, 6,8),vec3(1,1,1), vec3(0,0,1), vec3(5,5,5))
-    var m2 = mat3x4(vec4( 1, 1,1,1),vec4(1,1,1,1),  vec4(3,3,3,3))
-    var m4 = m2 * m1
 
     m22 *= 3
     echo m22
     
-    echo v2 * m22
+    echo mat3(5.0)
