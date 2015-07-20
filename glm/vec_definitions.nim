@@ -200,7 +200,6 @@ proc `*`*[T](a:var array[3,T], s:T)=
     for i in 0..2: a[i] *= s
     
 
-
 macro createScalarOperations*(upTo:int):stmt=
     let upToVec = intVal(upTo).int
     let ops = ["+", "-", "/", "*"]
