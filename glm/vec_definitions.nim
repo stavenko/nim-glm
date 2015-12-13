@@ -164,6 +164,10 @@ proc parameterConstructor(c:char, sm:string):seq[string]=
         var size = parseInt($c)
         result.add("$1:Vec$2[T]" % [sm, $size ])
 
+proc repeatStr(a:string, n:int):seq[string]=
+    result = @[]
+    for i in 1..n:
+        result.add(a)
 
 macro createConstructors*(upTo:int):stmt =
     var upToVec = intVal(upTo)
@@ -173,11 +177,14 @@ macro createConstructors*(upTo:int):stmt =
         var procStr = "proc vec$1*[$4]($2):Vec$1[$4]=Vec$1([$3])"
         var procStrU = "proc vec$1*($2):Vec$1[$4]=Vec$1([$3])"
         # create empty constructor
-        var resultProc = procStrU % [$vl, "", repeat(@["0.0"],vl).join(", "), "float" ]
+        let a= repeatStr("0.0", 4);
+        echo "AAA", a;
+
+        var resultProc = procStrU % [$vl, "", repeatStr("0.0",vl).join(", "), "float" ]
         result.add(parseStmt(resultProc))
         # create one parameter constructor
         if(vl > 1):
-            resultProc = procStr % [$vl, "a:T", repeat(@["a"],vl).join(", "), "T" ]
+            resultProc = procStr % [$vl, "a:T", repeatStr("a",vl).join(", "), "T" ]
             result.add(parseStmt(resultProc))
         for combination in getCombinationsForLength(vl, upToVec.int):
             var arrayConstructor:seq[string] = @[]
