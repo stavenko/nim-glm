@@ -177,9 +177,6 @@ macro createConstructors*(upTo:int):stmt =
         var procStr = "proc vec$1*[$4]($2):Vec$1[$4]=Vec$1([$3])"
         var procStrU = "proc vec$1*($2):Vec$1[$4]=Vec$1([$3])"
         # create empty constructor
-        let a= repeatStr("0.0", 4);
-        echo "AAA", a;
-
         var resultProc = procStrU % [$vl, "", repeatStr("0.0",vl).join(", "), "float" ]
         result.add(parseStmt(resultProc))
         # create one parameter constructor
