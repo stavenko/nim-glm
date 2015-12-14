@@ -27,6 +27,7 @@ macro addrGetter*(minSize, maxSize:int):stmt=
         for row in m .. M:
             var def = procT % [ $col, $row]
             result.add(parseStmt(def))
+
 macro columnGetters*(minSize, maxSize:int):stmt=
     macroInit(m, M)
     let procT = "proc `[]`*[T](m:Mat$1x$2[T], ix:int):Vec$2[T]= array[$1, Vec$2[T]](m)[ix]"

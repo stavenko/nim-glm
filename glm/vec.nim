@@ -6,8 +6,8 @@ import math
 static:
     const MAX_VEC_SIZE*:int = 4
 
-
-
+##Vector module contains all types and functions to manipulate vectors
+##
 defineVectorTypes(MAX_VEC_SIZE)
 mkToStr(MAX_VEC_SIZE)
 mkMathPerComponent(MAX_VEC_SIZE)
@@ -16,6 +16,7 @@ arrSetters(MAX_VEC_SIZE)
 componentGetterSetters( MAX_VEC_SIZE )
 multiComponentGetterList( MAX_VEC_SIZE )
 createConstructors( MAX_VEC_SIZE )
+addrGetter(MAX_VEC_SIZE)
 createScalarOperations(MAX_VEC_SIZE)
 createDotProduct(MAX_VEC_SIZE)
 createLengths(MAX_VEC_SIZE)
