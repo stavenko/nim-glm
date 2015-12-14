@@ -20,4 +20,11 @@ Also, this version has basics for common matrices creations:
         up = vec3(0.0, 1.0, 0.0)
         viewMatrix = lookAt(eye, center, up)
         projectionMat = perspective(math.PI/2, 1.0, 0.01, 100.0)
+
     echo viewMatrix * projectionMat
+
+Use it in OpenGL environment:
+
+    glUniformMatrix4fv(_uniformLocation, 1, false, projectionMatrix.addr
+
+
