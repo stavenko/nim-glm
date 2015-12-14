@@ -61,6 +61,16 @@ macro arrGetters*(upTo:int):stmt=
     for i in 1..upToVec:
         result.add(parseStmt("proc `[]`*[T](v:Vec$1[T], ix:int):T = array[$1,T](v)[ix]" % [$i] ))
 
+macro addrGetter*(upTo:int):stmt=
+    var upToVec = intVal(upTo)
+    let procT = """proc addr*[T](v:var Vec$1[T]):ptr T= 
+        ## Address getter to pass vector to native-C openGL functions as pointers
+        array[$1, T](v)[0].addr"""
+    result = newNimNode(nnkStmtList);
+    for i in 1..upToVec:
+        let def = procT % [$i]
+        result.add(parseStmt(def))
+
 macro componentGetterSetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
     result = newNimNode(nnkStmtList);
@@ -230,8 +240,10 @@ macro createDotProduct*(upTo:int):stmt=
 macro createLengths*(upTo:int):stmt=
     result = newNimNode(nnkStmtList);
     for i  in 1..upTo.intVal.int:
-        let l2s = "proc length2*[T](a:Vec$1[T]):T=sum(toA(a*a,$1,T))" % [ $i ]
-        let ls = "proc length*[T](a:Vec$1[T]):T=sqrt(a.length2)" % [ $i ]
+        let l2s = """proc length2*[T](vec:Vec$1[T]):T=
+        ## Returns  `vec.length * vec.length`
+        sum(toA(vec*vec,$1,T))""" % [ $i ]
+        let ls = "proc length*[T](vec:Vec$1[T]):T=sqrt(vec.length2)" % [ $i ]
         result.add(parseStmt(l2s))
         result.add(parseStmt(ls))
 
