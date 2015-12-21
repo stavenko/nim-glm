@@ -25,6 +25,6 @@ Also, this version has basics for common matrices creations:
 
 Use it in OpenGL environment:
 
-    glUniformMatrix4fv(_uniformLocation, 1, false, projectionMatrix.addr
+    glUniformMatrix4fv(_uniformLocation, 1, false, projectionMatrix.addr)
 
 
