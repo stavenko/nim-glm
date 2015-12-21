@@ -7,6 +7,7 @@ proc translate*[T](m:Mat4x4[T], v:Vec3[T]):Mat4x4[T]=
     result = Mat4x4(m)
     result[3] = (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2] ) + m[3]
 
+
 proc rotate*[T](m:Mat4x4[T], axis:Vec3[T], angle:T):Mat4x4[T]=
     let 
         a = angle
@@ -65,8 +66,9 @@ proc perspectiveRH*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
     result = mat4(0.0.T)
     result[0][0] = 1.T / (aspect * tanHalfFovy);
     result[1][1] = 1.T / (tanHalfFovy);
-    result[2][2] = - (zFar + zNear) / (zFar - zNear);
     result[2][3] = - 1.T;
+
+    result[2][2] = - (zFar + zNear) / (zFar - zNear);
     result[3][2] = - (2.T * zFar * zNear) / (zFar - zNear);
 
 proc lookAtRH*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
