@@ -3,7 +3,7 @@ import mat
 import vec
 import math
 
-proc transform*[T](m:Mat4x4[T], v:Vec3[T]):Mat4x4[T]=
+proc translate*[T](m:Mat4x4[T], v:Vec3[T]):Mat4x4[T]=
     result = Mat4x4(m)
     result[3] = (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2] ) + m[3]
 
@@ -121,7 +121,7 @@ else:
 
 if isMainModule:
     var m = mat4();
-    var nm = transform(m, vec3(5.0, 5.0, 5.0))
+    var nm = translate(m, vec3(5.0, 5.0, 5.0))
     var rm = rotate(m, vec3(0.0, 1.0, 0.0), math.PI/4)
     var sm = scale(m, vec3(1.5, 5.0, 8.0));
     var v = vec4(1.0,0.0,0.0,1.0)

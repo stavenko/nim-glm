@@ -56,6 +56,7 @@ macro matrixScalarOperations*(minSize, maxSize:int):stmt=
             for row in m .. M:
                 var def = procT % [ $col, $row, op ]
                 result.add(parseStmt(def))
+
 macro matrixUnaryScalarOperations*(minSize, maxSize:int):stmt=
     macroInit(m,M)
     let opT = "    m[$1][$2]= m[$1][$2] $3  s"
@@ -162,8 +163,8 @@ macro fromArray*(minSize, maxSize:int):stmt=
 
 macro matrixMultiplication*(minSize, maxSize:int):stmt=
     macroInit(m,M)
-    let Template = "proc `*`*[T](a:Mat$1x$2[T], b:Mat$2x$3[T]):Mat$1x$3[T]=" &
-                        "matProduct(array[$1, array[$2,T]](a), array[$2,array[$3,T]](b)).mat$1x$3"
+    let Template = "proc `*`*[T](a:Mat$2x$1[T], b:Mat$3x$2[T]):Mat$3x$1[T]=" &
+                        "matProduct(array[$3, array[$2,T]](b), array[$2,array[$1,T]](a)).mat$3x$1"
     var tuples:seq[tuple[c:int,r:int]] = @[]
     for col in m..M:
         for row in m..M:

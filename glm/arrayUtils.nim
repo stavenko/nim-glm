@@ -1,5 +1,6 @@
 import sequtils
 import strutils
+
 proc `$`*[T](a:openArray[T]):string=
     var 
         strs:seq[string] = @[]
