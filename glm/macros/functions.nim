@@ -1,6 +1,6 @@
 import macros
 import strutils
-import arrayUtils
+import glm.arrayUtils
 
 macro normalizeMacros*(vectorSize:int):stmt=
     var upTo = vectorSize.intVal.int

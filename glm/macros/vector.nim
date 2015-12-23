@@ -4,7 +4,7 @@ import macros
 import algorithm
 import math as m
 
-import arrayUtils
+import glm.arrayUtils
 export arrayUtils
 #
 #compile-time strongly inefficient math functions
@@ -246,6 +246,7 @@ macro createLengths*(upTo:int):stmt=
         let ls = "proc length*[T](vec:Vec$1[T]):T=sqrt(vec.length2)" % [ $i ]
         result.add(parseStmt(l2s))
         result.add(parseStmt(ls))
+
 
 
 

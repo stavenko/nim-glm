@@ -1,8 +1,9 @@
-import vec_definitions
-import function_geometric_macros
+import macros.vector
+import macros.functions
 import strutils
 import sequtils
 import math 
+
 static:
     const MAX_VEC_SIZE*:int = 4
 

@@ -1,6 +1,6 @@
 import strutils, macros
-import arrayUtils
-import mat_definitions
+import ./arrayUtils
+import macros.matrix
 import vec
 
 static:
@@ -17,6 +17,7 @@ matrixConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 emptyConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 diagonalConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixScalarOperations(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+matrixComparison(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
 proc inverse*[T](m:var Mat2x2[T]):Mat2x2[T]=
     var
