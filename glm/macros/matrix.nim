@@ -113,8 +113,8 @@ macro diagonalConstructors*(minSize,maxSize:int):stmt=
           v.add(if c==r: "s" else: "0.T")
         vv.add(vT % [ $row, v.join(", ")])
       if(row == col):
-        result.add(parseStmt(Tt %[$col, $row, vv.join(", ")]))
-      var def = T %[$col, $row, vv.join(", ")]
+        result.add(parseStmt(Tt % [$col, $row, vv.join(", ")]))
+      var def = T % [$col, $row, vv.join(", ")]
       result.add(parseStmt(def))
 
 
