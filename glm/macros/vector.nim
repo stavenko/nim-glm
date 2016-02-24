@@ -9,6 +9,7 @@ export arrayUtils
 #
 #compile-time strongly inefficient math functions
 proc floor(f:float):float=f.int.float
+
 proc round(f:float):float=
     var flo = f.floor
     var d = f - flo
@@ -19,6 +20,7 @@ proc pow(a,b:float):float=
     result  = 1;
     for i in 1..b.int:
         result *= a
+
 proc `fmod`(a,b:float):float=
     var diff = floor(a/b)*b
     return a-diff
@@ -223,7 +225,7 @@ macro createScalarOperations*(upTo:int):stmt=
     for vs in 1 .. upToVec:
         for op in ops:
             var procs = T % [ op, $vs ]
-            var backProcs = Tv %[ op, $vs]
+            var backProcs = Tv % [ op, $vs]
             var inlProcs = """proc `$1=`*[T](a:var Vec$2[T], s:T)=
             for i in 0..$2-1:
                 a[i] = a[i] $1 s """ % [ op, $vs ]

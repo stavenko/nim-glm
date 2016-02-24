@@ -1,7 +1,10 @@
 import glm
 import math
 
-proc main()=
+proc radians[T](deg:T):T=
+    return deg/180*PI;
+
+proc test1()=
     var 
         v1 = vec1()
         v2 = vec2()
@@ -15,5 +18,31 @@ proc main()=
     echo v1
     echo m, inverse(m)
 
+proc test2()=
+    var 
+        translate = 4.0
+        view = translate(mat4(1.0), vec3(0.0,0, -translate))
+        perspective = perspective(radians(45.0), 4.0 / 3.0, 0.1, 100.0)
+        RES =  view * perspective
+    echo view
+    echo perspective
+    echo 1/((4.0 / 3.0)* tan(45/2))
+    echo RES
+
+proc test3() =
+    let
+      normal = vec3(1,2,3).normalize
+      offset = vec3(1,2,3)
+      angle = 128
+
+    var v1 = vec4(1)
+    v1 *= 1.234
+    v1 *= mat4(1.0).translate(offset).rotate(normal, angle)
+    v1.x += 7
+    v1.yz += vec2(1,2)
+    v1.w *= 2
+
 if isMainModule:
-    main()
+    test1()
+    test2()
+    test3()
