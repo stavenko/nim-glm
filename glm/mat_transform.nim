@@ -15,7 +15,7 @@ proc rotate*[T](m:Mat4x4[T], axis:Vec3[T], angle:T):Mat4x4[T]=
         s = sin(a)
     var 
         naxis = normalize(axis)
-        temp  = (1.T - c) * naxis
+        temp  = T(1 - c) * naxis
         Rotate = mat4(0.0);
 
     Rotate[0][0] = c + temp[0] * axis[0];
