@@ -2,7 +2,7 @@ import macros, strutils
 
 template macroInit(m,M:expr){.immediate.}=
   result = newNimNode(nnkStmtList);
-  var 
+  var
     m = minSize.intVal.int
     M = maxSize.intVal.int
 
@@ -22,7 +22,7 @@ macro matrixEchos*(minSize, maxSize:int):stmt=
 
 macro addrGetter*(minSize, maxSize:int):stmt=
   macroInit(m, M)
-  let procT = "proc addr*[T](m:var Mat$1x$2[T]):ptr T= array[$1, array[$2,T]](m)[0][0].addr"
+  let procT = "proc caddr*[T](m:var Mat$1x$2[T]):ptr T= array[$1, array[$2,T]](m)[0][0].addr"
   for col in m..M:
     for row in m .. M:
       var def = procT % [ $col, $row]
@@ -38,7 +38,7 @@ macro columnGetters*(minSize, maxSize:int):stmt=
       var def2 = procTvar % [ $col, $row]
       result.add(parseStmt(def1))
       result.add(parseStmt(def2))
-      
+
 macro columnSetters*(minSize, maxSize:int):stmt=
   macroInit(m, M)
   let procT = "proc `[]=`*[T](m:var Mat$1x$2[T], ix:int, c:Vec$2[T])= array[$1, Vec$2[T]](m)[ix] = c"
@@ -50,7 +50,7 @@ macro columnSetters*(minSize, maxSize:int):stmt=
 macro matrixScalarOperations*(minSize, maxSize:int):stmt=
   macroInit(m, M)
   let procT = "proc `$3`*[T](m:Mat$1x$2[T], s:T):Mat$1x$2[T]=" &
-         "Mat$1x$2(map(array[$1,Vec$2[T]](m),proc(v:Vec$2[T]):Vec$2[T]= v $3 s))" 
+         "Mat$1x$2(map(array[$1,Vec$2[T]](m),proc(v:Vec$2[T]):Vec$2[T]= v $3 s))"
   for op in ["+", "-", "*", "/"]:
     for col in m..M:
       for row in m .. M:
@@ -61,7 +61,7 @@ macro matrixUnaryScalarOperations*(minSize, maxSize:int):stmt=
   macroInit(m,M)
   let opT = "  m[$1][$2]= m[$1][$2] $3  s"
   let T = "proc `$3=`*[T](m:var Mat$1x$2[T], s:T)=\n  var a = array[$1,array[$2,T]](m)\n"
-  
+
   for op in ["+", "-", "*", "/"]:
     for col in m..M:
       for row in m..M:
@@ -101,8 +101,8 @@ macro matrixConstructors*(minSize, maxSize:int):stmt=
 
 macro diagonalConstructors*(minSize,maxSize:int):stmt=
   macroInit(m, M)
-  let T = "proc mat$1x$2*[T](s:T):Mat$1x$2[T]=mat$1x$2($3)"  
-  let Tt = "proc mat$1*[T](s:T):Mat$1x$2[T]=mat$1x$2($3)"  
+  let T = "proc mat$1x$2*[T](s:T):Mat$1x$2[T]=mat$1x$2($3)"
+  let Tt = "proc mat$1*[T](s:T):Mat$1x$2[T]=mat$1x$2($3)"
   var vT = "vec$1($2)"
   for col in m..M:
     for row in m..M:
@@ -120,7 +120,7 @@ macro diagonalConstructors*(minSize,maxSize:int):stmt=
 
 macro emptyConstructors*(minSize, maxSize:int):stmt=
   macroInit(m,M)
-  let vecTemplate = "vec$1($2)" 
+  let vecTemplate = "vec$1($2)"
   let fullTemplate= "proc mat$1x$2*():Mat$1x$2[float]=mat$1x$2($3)"
   let partialTemplate= "proc mat$1*():Mat$1x$2[float]=mat$1($3)"
   for col in m..M:
@@ -175,7 +175,7 @@ macro matrixMultiplication*(minSize, maxSize:int):stmt=
       if l.r == r.c:
         var def = Template % [$l.c, $l.r, $r.r]
         result.add(parseStmt( def ));
-      
+
 macro matrixVectorMultiplication*(minSize, maxSize:int):stmt=
   macroInit(m,M)
   let Tv = "proc `*`*[T](m:Mat$1x$2[T], v:Vec$1[T]):Vec$2[T]=Vec$2(matVecProduct( array[$1,array[$2,T]](m), array[$1,T](v)))"
