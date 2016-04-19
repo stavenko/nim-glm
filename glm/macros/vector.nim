@@ -65,7 +65,7 @@ macro arrGetters*(upTo:int):stmt=
 
 macro addrGetter*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    let procT = """proc addr*[T](v:var Vec$1[T]):ptr T= 
+    let procT = """proc addr*[T](v:var Vec$1[T]):ptr T=
         ## Address getter to pass vector to native-C openGL functions as pointers
         array[$1, T](v)[0].addr"""
     result = newNimNode(nnkStmtList);
@@ -87,7 +87,7 @@ macro componentGetterSetters*(upTo:int):stmt=
                 result.add(parseStmt( templG % [tr[i], $s, $i] ))
                 result.add(parseStmt( templS % [col[i], $s, $i] ))
                 result.add(parseStmt( templG % [col[i], $s, $i] ))
-    
+
 proc pow(a,b:int):int= floor(pow(a.float, b.float)).int
 proc fmod(a,b:int):int=floor(fmod(a.float, b.float)).int
 iterator shifts(minArr,arrLen,upToVec:int):seq[int]=
@@ -113,16 +113,16 @@ macro multiComponentGetterList*(upTo:int):stmt=
             var procStr = "proc $1*[T](v: Vec$2[T]):Vec$3[T]=Vec$3[T]([$4])" % [getter.join(""), $i, $combination.len, arr.join(",")]
             result.add(parseStmt( procStr))
 
-        
+
 proc getComponentIx(shiftn,length,componentIx:int):int=
     floor(shiftn.fmod( pow(length,componentIx) )/pow(length,componentIx-1) ).int
-    
+
 proc shifts(data:seq[char]):seq[seq[char]]=
-    
+
     var length = data.len;
     var shifts = pow(length, length)
     result = @[]
-    
+
     for i in 0..shifts-1:
         var cs:seq[char] = @[]
         for j in 1..length:
@@ -214,14 +214,14 @@ macro createConstructors*(upTo:int):stmt =
 
 proc `*`*[T](a:var array[3,T], s:T)=
     for i in 0..2: a[i] *= s
-    
+
 
 macro createScalarOperations*(upTo:int):stmt=
     let upToVec = intVal(upTo).int
     let ops = ["+", "-", "/", "*"]
     result = newNimNode(nnkStmtList);
-    let T = "proc `$1`*[T](a:Vec$2[T], s:T):Vec$2[T]=Vec$2(map(array[$2,T](a), proc(a:T):T=a $1 s))"
-    let Tv = "proc `$1`*[T](s:T, a:Vec$2[T]):Vec$2[T]=Vec$2(map(array[$2,T](a), proc(a:T):T=a $1 s))"
+    let T = "proc `$1`*[T](a:Vec$2[T], s:T):Vec$2[T]=Vec$2[T](map(array[$2,T](a), proc(a:T):T=a $1 s))"
+    let Tv = "proc `$1`*[T](s:T, a:Vec$2[T]):Vec$2[T]=Vec$2[T](map(array[$2,T](a), proc(a:T):T=a $1 s))"
     for vs in 1 .. upToVec:
         for op in ops:
             var procs = T % [ op, $vs ]

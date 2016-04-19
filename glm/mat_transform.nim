@@ -4,16 +4,16 @@ import vec
 import math
 
 proc translate*[T](m:Mat4x4[T], v:Vec3[T]):Mat4x4[T]=
-    result = Mat4x4(m)
+    result = Mat4x4[T](m)
     result[3] = (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2] ) + m[3]
 
 
 proc rotate*[T](m:Mat4x4[T], axis:Vec3[T], angle:T):Mat4x4[T]=
-    let 
+    let
         a = angle
         c = cos(a)
         s = sin(a)
-    var 
+    var
         naxis = normalize(axis)
         temp  = (1.T - c) * naxis
         Rotate = mat4(0.0);
@@ -36,12 +36,13 @@ proc rotate*[T](m:Mat4x4[T], axis:Vec3[T], angle:T):Mat4x4[T]=
     result[2] = m[0] * Rotate[2][0] + m[1] * Rotate[2][1] + m[2] * Rotate[2][2];
     result[3] = m[3];
 
-proc scale*[T](m:Mat4x4, v:Vec3[T]):Mat4x4 =
+proc scale*[T](m:Mat4x4, v:Vec3[T]):Mat4x4[T] =
     result = Mat4x4(m)
     result[0] = m[0] * v[0];
     result[1] = m[1] * v[1];
     result[2] = m[2] * v[2];
     result[3] = m[3];
+
 proc  ortho*[T]( left, right, bottom, top, zNear, zFar:T):Mat4x4[T]=
     result = mat4(1.0.T);
     result[0][0] = 2.T / (right - left);
@@ -50,8 +51,9 @@ proc  ortho*[T]( left, right, bottom, top, zNear, zFar:T):Mat4x4[T]=
     result[3][0] = - (right + left) / (right - left);
     result[3][1] = - (top + bottom) / (top - bottom);
     result[3][2] = - (zFar + zNear) / (zFar - zNear);
+
 proc perspectiveLH*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
-    let 
+    let
         tanHalfFovy = tan(fovy / 2.T);
     result = mat4(0.0.T)
     result[0][0] = 1.T / (aspect * tanHalfFovy);
@@ -61,7 +63,7 @@ proc perspectiveLH*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
     result[3][2] = - (2.T * zFar * zNear) / (zFar - zNear);
 
 proc perspectiveRH*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
-    let 
+    let
         tanHalfFovy = tan(fovy / 2.T);
     result = mat4(0.0.T)
     result[0][0] = 1.T / (aspect * tanHalfFovy);
