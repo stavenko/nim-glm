@@ -6,7 +6,7 @@ import math as m
 
 import glm.arrayUtils
 export arrayUtils
-#
+
 #compile-time strongly inefficient math functions
 proc floor(f:float):float=f.int.float
 
@@ -17,7 +17,7 @@ proc round(f:float):float=
     else: result = flo
 
 proc pow(a,b:float):float=
-    result  = 1;
+    result  = 1
     for i in 1..b.int:
         result *= a
 
@@ -27,7 +27,7 @@ proc `fmod`(a,b:float):float=
 
 macro defineVectorTypes*(upTo:int):stmt=
     var upToVec:int = intVal(upTo).int
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i in 1 .. upToVec:
         var def = "type Vec$1*[T] = distinct array[$1, T]" % [$i]
         result.add(parseStmt(def))
@@ -39,7 +39,7 @@ template toA*( v:expr, i:int, T:typedesc):expr=
 macro mkMathPerComponent*(upTo:int):stmt=
     var upToVec = intVal(upTo)
     let ops = ['+', '-', '/', '*']
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i in 1..upToVec:
         for op in ops:
             var str:string = "proc `$1`*[T](v,u:$2[T]):$2[T]= $2(zipWith( v.toA($3,T), u.toA($3,T), proc(a,b:T):T=a$1b))"%[$op, "Vec$#"%[$i], $i]
@@ -47,19 +47,19 @@ macro mkMathPerComponent*(upTo:int):stmt=
 
 macro mkToStr*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i in 1..upToVec:
         result.add(parseStmt("proc `$$`*[T](v:Vec$1[T]):string=  $$ array[$1, T](v)" % [ $i ]))
 
 macro arrSetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i in 1..upToVec:
         result.add(parseStmt("proc `[]=`*[T](v:var Vec$1[T], ix:int, c:T) = array[$1,T](v)[ix]=c" % [$i] ))
 
 macro arrGetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i in 1..upToVec:
         result.add(parseStmt("proc `[]`*[T](v:Vec$1[T], ix:int):T = array[$1,T](v)[ix]" % [$i] ))
 
@@ -68,14 +68,14 @@ macro addrGetter*(upTo:int):stmt=
     let procT = """proc caddr*[T](v:var Vec$1[T]):ptr T=
         ## Address getter to pass vector to native-C openGL functions as pointers
         array[$1, T](v)[0].addr"""
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i in 1..upToVec:
         let def = procT % [$i]
         result.add(parseStmt(def))
 
 macro componentGetterSetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     let templG = "proc $1*[T](v:Vec$2[T]):T=array[$2,T](v)[$3]"
     let templS = "proc `$1=`*[T](v:var Vec$2[T],c:T)=(array[$2,T](v))[$3]=c"
     let tr = ["x","y","z","w"]
@@ -101,7 +101,7 @@ iterator shifts(minArr,arrLen,upToVec:int):seq[int]=
 
 macro multiComponentGetterList*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     let comps=["x","y","z","w"]
     for i in 2..upToVec.int:
         for combination in shifts(2,i, upToVec.int):
@@ -119,7 +119,7 @@ proc getComponentIx(shiftn,length,componentIx:int):int=
 
 proc shifts(data:seq[char]):seq[seq[char]]=
 
-    var length = data.len;
+    var length = data.len
     var shifts = pow(length, length)
     result = @[]
 
@@ -133,6 +133,7 @@ proc flatten[T](s:seq[seq[T]]):seq[T]=
     result = @[]
     for i in s:
         result = result & i
+
 proc getCombinationsForLength(vecLength,upToVec:int):seq[seq[char]]=
     var vx:seq[char] = @['V']
     for i in 1..upToVec:
@@ -144,7 +145,7 @@ proc getCombinationsForLength(vecLength,upToVec:int):seq[seq[char]]=
         else: result = parseInt($s)
     var available = vx.filter(proc(x:char):bool=return glength(x) <= vecLength)
     result = @[]
-    var count = 0;
+    var count = 0
     for sym in available.reversed():
         var res:seq[char] = @[ sym ]
         count += glength(sym)
@@ -156,7 +157,7 @@ proc getCombinationsForLength(vecLength,upToVec:int):seq[seq[char]]=
             count =0
         else:
             count = 0
-            result.add(res);
+            result.add(res)
 
 proc componentGetters(c:char, sm:string):seq[string]=
     case c
@@ -183,7 +184,7 @@ proc repeatStr(a:string, n:int):seq[string]=
 
 macro createConstructors*(upTo:int):stmt =
     var upToVec = intVal(upTo)
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     let paramnames = "abcdefghijklomnpo"
     for vl in 1..upToVec.int:
         var procStr = "proc vec$1*[$4]($2):Vec$1[$4]=Vec$1([$3])"
@@ -219,7 +220,7 @@ proc `*`*[T](a:var array[3,T], s:T)=
 macro createScalarOperations*(upTo:int):stmt=
     let upToVec = intVal(upTo).int
     let ops = ["+", "-", "/", "*"]
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     let T = "proc `$1`*[T](a:Vec$2[T], s:T):Vec$2[T]=Vec$2[T](map(array[$2,T](a), proc(a:T):T=a $1 s))"
     let Tv = "proc `$1`*[T](s:T, a:Vec$2[T]):Vec$2[T]=Vec$2[T](map(array[$2,T](a), proc(a:T):T=a $1 s))"
     for vs in 1 .. upToVec:
@@ -234,13 +235,13 @@ macro createScalarOperations*(upTo:int):stmt=
             result.add(parseStmt(inlProcs))
 
 macro createDotProduct*(upTo:int):stmt=
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i  in 1..upTo.intVal.int:
         let dotProducts = "proc dot*[T](a,b:Vec$1[T]):T=sum(toA(a*b,$1,T))" % [ $i ]
         result.add(parseStmt(dotProducts))
 
 macro createLengths*(upTo:int):stmt=
-    result = newNimNode(nnkStmtList);
+    result = newNimNode(nnkStmtList)
     for i  in 1..upTo.intVal.int:
         let l2s = """proc length2*[T](vec:Vec$1[T]):T=
         ## Returns  `vec.length * vec.length`
@@ -248,7 +249,4 @@ macro createLengths*(upTo:int):stmt=
         let ls = "proc length*[T](vec:Vec$1[T]):T=sqrt(vec.length2)" % [ $i ]
         result.add(parseStmt(l2s))
         result.add(parseStmt(ls))
-
-
-
 

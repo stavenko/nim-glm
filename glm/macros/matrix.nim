@@ -1,7 +1,7 @@
 import macros, strutils
 
 template macroInit(m,M:expr){.immediate.}=
-  result = newNimNode(nnkStmtList);
+  result = newNimNode(nnkStmtList)
   var
     m = minSize.intVal.int
     M = maxSize.intVal.int
@@ -174,7 +174,7 @@ macro matrixMultiplication*(minSize, maxSize:int):stmt=
     for r in tuples:
       if l.r == r.c:
         var def = Template % [$l.c, $l.r, $r.r]
-        result.add(parseStmt( def ));
+        result.add(parseStmt( def ))
 
 macro matrixVectorMultiplication*(minSize, maxSize:int):stmt=
   macroInit(m,M)
@@ -184,7 +184,6 @@ macro matrixVectorMultiplication*(minSize, maxSize:int):stmt=
     for row in m..M:
       let def1 = Tv % [ $col, $row ]
       let def2 = vT % [ $col, $row ]
-      result.add(parseStmt( def1 ));
-      result.add(parseStmt( def2 ));
-
+      result.add(parseStmt( def1 ))
+      result.add(parseStmt( def2 ))
 
