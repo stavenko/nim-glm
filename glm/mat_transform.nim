@@ -44,41 +44,41 @@ proc scale*[T](m:Mat4x4, v:Vec3[T]):Mat4x4[T] =
     result[3] = m[3]
 
 proc ortho*[T]( left, right, bottom, top, zNear, zFar:T):Mat4x4[T]=
-    result = mat4(1.0.T)
-    result[0][0] = 2.T / (right - left)
-    result[1][1] = 2.T / (top - bottom)
-    result[2][2] = - 2.T / (zFar - zNear)
-    result[3][0] = - (right + left) / (right - left)
-    result[3][1] = - (top + bottom) / (top - bottom)
-    result[3][2] = - (zFar + zNear) / (zFar - zNear)
+    result = mat4[T](1.0)
+    result[0][0] = T(2) / (right - left)
+    result[1][1] = T(2) / (top - bottom)
+    result[2][2] = -T(2) / (zFar - zNear)
+    result[3][0] = -(right + left) / (right - left)
+    result[3][1] = -(top + bottom) / (top - bottom)
+    result[3][2] = -(zFar + zNear) / (zFar - zNear)
 
 proc perspectiveLH*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
     let
-        tanHalfFovy = tan(fovy / 2.T)
-    result = mat4(0.0.T)
-    result[0][0] = 1.T / (aspect * tanHalfFovy)
-    result[1][1] = 1.T / (tanHalfFovy)
-    result[2][2] =  (zFar + zNear) / (zFar - zNear)
-    result[2][3] =  1.T
-    result[3][2] = - (2.T * zFar * zNear) / (zFar - zNear)
+        tanHalfFovy = tan(fovy / T(2))
+    result = mat4[T](0.0)
+    result[0][0] = T(1) / (aspect * tanHalfFovy)
+    result[1][1] = T(1) / (tanHalfFovy)
+    result[2][2] = (zFar + zNear) / (zFar - zNear)
+    result[2][3] = T(1)
+    result[3][2] = - (T(2) * zFar * zNear) / (zFar - zNear)
 
 proc perspectiveRH*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
     let
-        tanHalfFovy = tan(fovy / 2.T)
-    result = mat4(0.0.T)
-    result[0][0] = 1.T / (aspect * tanHalfFovy)
-    result[1][1] = 1.T / (tanHalfFovy)
-    result[2][3] = - 1.T
+        tanHalfFovy = tan(fovy / T(2))
+    result = mat4[T](0.0)
+    result[0][0] = T(1) / (aspect * tanHalfFovy)
+    result[1][1] = T(1) / (tanHalfFovy)
+    result[2][3] = T(-1)
 
-    result[2][2] = - (zFar + zNear) / (zFar - zNear)
-    result[3][2] = - (2.T * zFar * zNear) / (zFar - zNear)
+    result[2][2] = -(zFar + zNear) / (zFar - zNear)
+    result[3][2] = -(T(2) * zFar * zNear) / (zFar - zNear)
 
 proc lookAtRH*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
     let
         f = normalize(center - eye)
         s = normalize(cross(f, up))
         u = cross(s,f)
-    result = mat4(1.T)
+    result = mat4[T](1.0)
     result[0][0] = s.x
     result[1][0] = s.y
     result[2][0] = s.z
@@ -97,7 +97,7 @@ proc lookAtLH*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
         f = normalize(center - eye)
         s = normalize(cross(f, up))
         u = cross(s,f)
-    result = mat4(1.T)
+    result = mat4[T](1.0)
 
     result[0][0] = s.x
     result[1][0] = s.y
