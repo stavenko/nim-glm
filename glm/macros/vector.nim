@@ -65,7 +65,7 @@ macro arrGetters*(upTo:int):stmt=
 
 macro addrGetter*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    let procT = """proc addr*[T](v:var Vec$1[T]):ptr T=
+    let procT = """proc caddr*[T](v:var Vec$1[T]):ptr T=
         ## Address getter to pass vector to native-C openGL functions as pointers
         array[$1, T](v)[0].addr"""
     result = newNimNode(nnkStmtList);

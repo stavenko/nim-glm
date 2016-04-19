@@ -3,7 +3,7 @@
 Nim-glm has vector constructors:
 Here's some examples
 
-    var 
+    var
         v = vec3(1.0, 5.0, 6.0)
         a = vec3(2.0, 2.0, 5.0)
         v4 = vec4(v, 1.0);
@@ -25,6 +25,6 @@ Also, this version has basics for common matrices creations:
 
 Use it in OpenGL environment:
 
-    glUniformMatrix4fv(_uniformLocation, 1, false, projectionMatrix.addr)
+    glUniformMatrix4fv(_uniformLocation, 1, false, projectionMatrix.caddr)
 
 

@@ -22,7 +22,7 @@ macro matrixEchos*(minSize, maxSize:int):stmt=
 
 macro addrGetter*(minSize, maxSize:int):stmt=
   macroInit(m, M)
-  let procT = "proc addr*[T](m:var Mat$1x$2[T]):ptr T= array[$1, array[$2,T]](m)[0][0].addr"
+  let procT = "proc caddr*[T](m:var Mat$1x$2[T]):ptr T= array[$1, array[$2,T]](m)[0][0].addr"
   for col in m..M:
     for row in m .. M:
       var def = procT % [ $col, $row]
