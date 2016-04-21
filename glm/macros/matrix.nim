@@ -1,7 +1,7 @@
 import macros, strutils
 
 template macroInit(m,M:expr){.immediate.}=
-  result = newNimNode(nnkStmtList);
+  result = newNimNode(nnkStmtList)
   var
     m = minSize.intVal.int
     M = maxSize.intVal.int
@@ -50,7 +50,7 @@ macro columnSetters*(minSize, maxSize:int):stmt=
 macro matrixScalarOperations*(minSize, maxSize:int):stmt=
   macroInit(m, M)
   let procT = "proc `$3`*[T](m:Mat$1x$2[T], s:T):Mat$1x$2[T]=" &
-         "Mat$1x$2(map(array[$1,Vec$2[T]](m),proc(v:Vec$2[T]):Vec$2[T]= v $3 s))"
+         "Mat$1x$2[T](map(array[$1,Vec$2[T]](m),proc(v:Vec$2[T]):Vec$2[T]= v $3 s))"
   for op in ["+", "-", "*", "/"]:
     for col in m..M:
       for row in m .. M:
@@ -77,9 +77,9 @@ macro matrixConstructors*(minSize, maxSize:int):stmt=
   macroInit(m, M)
   let vars = ["a","b","c","d"]
   let procTemplate = "proc mat$1x$2*[T]($3):Mat$1x$2[T]=" &
-             "Mat$1x$2([$4])"
+             "Mat$1x$2[T]([$4])"
   let procTemplateS = "proc mat$1*[T]($3):Mat$1x$2[T]=" &
-            "Mat$1x$2([$4])"
+            "Mat$1x$2[T]([$4])"
   for col in m..M:
     for row in m..M:
       var fvecs:seq[string] = @[]
@@ -140,7 +140,7 @@ macro emptyConstructors*(minSize, maxSize:int):stmt=
 
 macro fromArray*(minSize, maxSize:int):stmt=
   macroInit(m, M)
-  var T = "proc mat$1x$2*[T](a:array[$1,array[$2,T]]):Mat$1x$2[T]=Mat$1x$2([$3])"
+  var T = "proc mat$1x$2*[T](a:array[$1,array[$2,T]]):Mat$1x$2[T]=Mat$1x$2[T]([$3])"
   var Tv = "Vec$1(a[$2])"
   for col in m..M:
     for row in m..M:
@@ -174,7 +174,7 @@ macro matrixMultiplication*(minSize, maxSize:int):stmt=
     for r in tuples:
       if l.r == r.c:
         var def = Template % [$l.c, $l.r, $r.r]
-        result.add(parseStmt( def ));
+        result.add(parseStmt( def ))
 
 macro matrixVectorMultiplication*(minSize, maxSize:int):stmt=
   macroInit(m,M)
@@ -184,7 +184,6 @@ macro matrixVectorMultiplication*(minSize, maxSize:int):stmt=
     for row in m..M:
       let def1 = Tv % [ $col, $row ]
       let def2 = vT % [ $col, $row ]
-      result.add(parseStmt( def1 ));
-      result.add(parseStmt( def2 ));
-
+      result.add(parseStmt( def1 ))
+      result.add(parseStmt( def2 ))
 
