@@ -186,8 +186,8 @@ macro createConstructors*(upTo:int):stmt =
     result = newNimNode(nnkStmtList);
     let paramnames = "abcdefghijklomnpo"
     for vl in 1..upToVec.int:
-        var procStr = "proc vec$1*[$4]($2):Vec$1[$4]=Vec$1([$3])"
-        var procStrU = "proc vec$1*($2):Vec$1[$4]=Vec$1([$3])"
+        var procStr = "proc vec$1*[$4]($2):Vec$1[$4]=Vec$1[$4]([$3])"
+        var procStrU = "proc vec$1*($2):Vec$1[$4]=Vec$1[$4]([$3])"
         # create empty constructor
         var resultProc = procStrU % [$vl, "", repeatStr("0.0",vl).join(", "), "float" ]
         result.add(parseStmt(resultProc))

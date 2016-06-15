@@ -77,9 +77,9 @@ macro matrixConstructors*(minSize, maxSize:int):stmt=
   macroInit(m, M)
   let vars = ["a","b","c","d"]
   let procTemplate = "proc mat$1x$2*[T]($3):Mat$1x$2[T]=" &
-             "Mat$1x$2([$4])"
+             "Mat$1x$2[T]([$4])"
   let procTemplateS = "proc mat$1*[T]($3):Mat$1x$2[T]=" &
-            "Mat$1x$2([$4])"
+            "Mat$1x$2[T]([$4])"
   for col in m..M:
     for row in m..M:
       var fvecs:seq[string] = @[]
