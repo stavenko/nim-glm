@@ -2,17 +2,16 @@ import sequtils
 import strutils
 
 proc `$`*[T](a:openArray[T]):string=
-    var 
+    var
         strs:seq[string] = @[]
     for i in a:
-        strs.add( $i);
+        strs.add( $i)
     return [ "[" ,strs.join(", "),"]" ].join
-
 
 
 proc matProduct*[N,M,P,T](a:array[N,array[M,T]],
                          b:array[M,array[P,T]]):array[N,array[P,T]]=
-    var 
+    var
         n = a.len-1
         m = b.len-1
         p = b[0].len-1
@@ -31,8 +30,10 @@ proc matVecProduct*[N,M,T](mat:array[N,array[M,T]], v:array[N,T]):array[M,T]=
         result[i] = 0
         for c in 0..n-1:
             result[i] += mat[c][i] * v[c]
+
+
 proc matVecProduct*[N,M,T](v:array[M,T], mat:array[N,array[M,T]]):array[N,T]=
-    var 
+    var
         n = mat.len
         m = mat[0].len
     for i in 0..n-1:
@@ -45,8 +46,9 @@ proc zipWith*[I,F,T](a, b:array[I,F], op:proc(a,b:F):T):array[I,T]=
     for i in low(a) .. high(a):
         result[i] = op(a[i],b[i])
 
+
 proc `$`*[N,M,T](arr:array[N,array[M,T]]):string=
-    var 
+    var
         cols = arr.len
         rows = arr[0].len
         matStr :seq[string] = @[]
@@ -57,6 +59,7 @@ proc `$`*[N,M,T](arr:array[N,array[M,T]]):string=
         matStr.add(rowStr.join "  ")
     result = "\n" & matStr.join("\n")
 
+
 proc map*[N,T](a:array[N,T], f:proc(a:T):T):array[N,T]=
     for i in a.low .. a.high:
         result[i] = f(a[i])
@@ -66,7 +69,4 @@ proc foldl[N,T,S](a:array[N,T], acc:S, f:proc(a:S,b:T):S):S=
     result = acc
     for i in a.low .. a.high:
         result = f(result, a[i])
-        
 
-
-    
