@@ -91,8 +91,8 @@ proc inverse*[T](m:var Mat4x4[T]):Mat4x4[T]=
         Inv2=vec4((Vec0 * Fac1) - (Vec1 * Fac3) + (Vec3 * Fac5))
         Inv3=vec4((Vec0 * Fac2) - (Vec1 * Fac4) + (Vec2 * Fac5))
 
-        SignA:Vec4[float] = vec4(+1.float, -1, +1, -1)
-        SignB:Vec4[float] = vec4(-1.float, +1, -1, +1)
+        SignA:Vec4[T] = vec4(+1.T, -1, +1, -1)
+        SignB:Vec4[T] = vec4(-1.T, +1, -1, +1)
         Inverse = mat4(Inv0 * SignA, Inv1 * SignB, Inv2 * SignA, Inv3 * SignB)
 
         Row0 = vec4(Inverse[0][0], Inverse[1][0], Inverse[2][0], Inverse[3][0])
