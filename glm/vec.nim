@@ -7,14 +7,16 @@ import math
 
 ##Vector module contains all types and functions to manipulate vectors
 ##
-type Vec*[N : static[int], T] = distinct array[N, T]
-proc `$`*(v: Vec) : string =  $ array[v.N, v.T](v)
-
+type
+  Vec*[N : static[int], T] = object
+    arr: array[N, T]
+    
+proc `$`*(v: Vec) : string =  $v.arr
 
 template mathPerComponent(op: untyped): untyped =
   proc op*(v,u: Vec): Vec =
     for i in 0 ..< Vec.N:
-      result[i] = op(v[i], u[0])
+      result[i] = op(v[i], u[i])
 
   proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
     for i in 0 ..< N:
@@ -24,95 +26,139 @@ template mathPerComponent(op: untyped): untyped =
     for i in 0 ..< N:
       result[i] = op(val, v[i])
 
+
+    
 mathPerComponent(`+`)
 mathPerComponent(`-`)
 mathPerComponent(`/`)
 mathPerComponent(`*`)
 
-proc `[]=`*[N,T](v:var Vec[N,T]; ix:int; c:T) = array[N,T](v)[ix] = c
-proc `[]`*[N,T](v: Vec[N,T]; ix: int): T = array[N,T](v)[ix]
+template mathInpl(op: untyped): untyped =
+  proc op*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
+    for i in 0 ..< N:
+      op(v.arr[i], u[i])
+
+mathInpl(`+=`)
+mathInpl(`-=`)
+mathInpl(`*=`)
+mathInpl(`/=`)
+
+proc `[]=`*[N,T](v:var Vec[N,T]; ix:int; c:T) = v.arr[ix] = c
+proc `[]`*[N,T](v: Vec[N,T]; ix: int): T = v.arr[ix]
+proc `[]`*[N,T](v: var Vec[N,T]; ix: int): var T = v.arr[ix]
 
 proc vec2*[T](x,y: T): Vec[2,T] =
   result[0] = x
   result[1] = y
 
+proc vec2*[T](arg: T): Vec[2,T] =
+  result[0] = arg
+  result[1] = arg
+  
 proc vec3*[T](x,y,z : T): Vec[3,T] =
   result[0] = x
   result[1] = y
   result[2] = z
-  
+
+proc vec3*[T](arg : T): Vec[3,T] =
+  result[0] = arg
+  result[1] = arg
+  result[2] = arg
+
 proc vec4*[T](x,y,z,w : T): Vec[4,T] =
   result[0] = x
   result[1] = y
   result[2] = z
   result[3] = w
 
-macro genSwizzleOps*(): untyped =
-  result = newStmtList()
+proc vec4*[T](arg : T): Vec[4,T] =
+  result[0] = arg
+  result[1] = arg
+  result[2] = arg
+  result[3] = arg
+  
+proc subVec[N,T](v: var Vec[N,T]; offset, length: static[int]): var Vec[length,T] =
+  cast[ptr Vec[length, T]](v.arr[offset].addr)[]
+  
+proc head(node: NimNode): NimNode {.compileTime.} = node[0]
+  
+proc growingIndices(indices: varargs[int]): bool =
+  ## returns true when every argument is bigger than all previous arguments
+  for i in 1 .. indices.high:
+    if indices[i-1] >= indices[i]:
+      return false
+  return true
 
+proc continuousIndices(indices: varargs[int]): bool =
+  for i in 1 .. indices.high:
+    if indices[i-1] != indices[i]-1:
+      return false
+  return true
+
+  
+proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
+  result.newSeq(0)
+  
   const chars = "xyzw"
 
-  proc name(args: varargs[int]) : string =
-    result = ""
-    for arg in args:
-      result.add chars[arg]
+  var name = ""
+  for idx in indices:
+    name.add chars[idx]
 
-  for i in 0 .. chars.high:
-    let getIdent = ident(name(i))
-    let setIdent = ident(name(i)&'=')
-    let iLit = newLit(i)
-    
-    result.add quote do:
-      proc `getIdent`*(v: Vec): auto = v[`iLit`]
-      proc `setIdent`*[N,T](v: Vec[N,T]; val: T): void =
-        v[`iLit`] = val
+  let getIdent = ident(name)
+  let setIdent = ident(name & '=')
+
+  if indices.len > 1:
+    let constructCall = newCall(ident("vec" & $indices.len))
+    let Nlit = newLit(indices.len)
+    let v = genSym(nskParam, "v")
+
+    for idx in indices:
+      let lit = newLit(idx)
+      constructCall.add head quote do:
+        `v`[`lit`]
+
+    result.add head quote do:
+      proc `getIdent`*[N,T](`v`: Vec[N,T]): Vec[`Nlit`,T] = `constructCall`
+
+    if continuousIndices(indices):
+      let offsetLit = newLit(indices[0])
+      let lengthLit = newLit(indices.len)
+      result.add head quote do:
+        proc `getIdent`*[N,T](`v`: var Vec[N,T]): var Vec[`Nlit`,T] =
+          `v`.subVec(`offsetLit`, `lengthLit`)
+
+  else:
+    let lit = newLit(indices[0])
+    result.add head quote do:
+      proc `getIdent`*(v: Vec): auto = v[`lit`]
+
+  if growingIndices(indices):
+    let N2lit = newLit(indices.len)
+    let v1 = genSym(nskParam, "v1")
+    let v2 = genSym(nskParam, "v2")
+
+    let assignments = newStmtList()
+    for i,idx in indices:
+      let litL = newLit(idx)
+      let litR = newLit(i)
+      assignments.add head quote do:
+        `v1`[`litL`] = `v2`[`litR`]
       
-    for j in 0 .. chars.high:
-      let getIdent = ident(name(i,j))
-      let setIdent = ident(name(i,j)&'=')
-      let jLit = newLit(j)
-        
-      result.add quote do:
-        proc `getIdent`*(v: Vec): auto = vec2(v[`iLit`], v[`jLit`])
-
-      if i < j:
-        result.add quote do:
-          proc `setIdent`*[N,T](v: Vec[N,T]; vi, vj: T): void =
-            v[`iLit`] = vi
-            v[`jLit`] = vj
-
-      for k in 0 .. chars.high:
-        let getIdent = ident(name(i,j,k))
-        let setIdent = ident(name(i,j,k)&'=')
-        let kLit = newLit(k)
-        
-        result.add quote do:
-          proc `getIdent`*(v: Vec): auto = vec3(v[`iLit`], v[`jLit`], v[`kLit`])
-
-        if i < j and j < k:
-          result.add quote do:
-            proc `setIdent`*[N,T](v: Vec[N,T]; vi, vj, vk: T): void =
-              v[`iLit`] = vi
-              v[`jLit`] = vj
-              v[`kLit`] = vk
-
-        for m in 0 .. chars.high:
-          let getIdent = ident(name(i,j,k,m))
-          let setIdent = ident(name(i,j,k,m)&'=')
-          let mLit = newLit(m)
-        
-          result.add quote do:
-            proc `getIdent`*(v: Vec): auto = vec4(v[`iLit`], v[`jLit`], v[`kLit`], v[`mLit`])
-          if i < j and j < k and k < m:
-            if i < j and j < k:
-              result.add quote do:
-                proc `setIdent`*[N,T](v: Vec[N,T]; vi, vj, vk, vm: T): void =
-                  v[`iLit`] = vi
-                  v[`jLit`] = vj
-                  v[`kLit`] = vk
-                  v[`mLit`] = vm
-
-  echo result.repr
+    result.add head quote do:
+      proc `setIdent`*[N,T](`v1`: Vec[N,T]; `v2`: Vec[`N2lit`,T]): void =
+        `assignments`
+    
+macro genSwizzleOps*(): untyped =
+  result = newStmtList()
+  for i in 0 .. 3:
+    result.add swizzleMethods(i)
+    for j in 0 .. 3:
+      result.add swizzleMethods(i,j)
+      for k in 0 .. 3:
+        result.add swizzleMethods(i,j,k)
+        for m in 0 .. 3:
+          result.add swizzleMethods(i,j,k,m)
   
 genSwizzleOps()
 
@@ -122,7 +168,7 @@ proc dot*[N,T](u,v: Vec[N,T]): T =
     
 proc caddr*[N,T](v:var Vec[N,T]): ptr T =
   ## Address getter to pass vector to native-C openGL functions as pointers
-  array[N, T](v)[0].addr
+  v.arr[0].addr
 
 proc length2*(v: Vec): auto = dot(v,v)
 proc length*(v: Vec): auto = sqrt(dot(v,v))
@@ -135,10 +181,13 @@ proc cross*[T](x,y:Vec[3,T]): Vec[3,T] =
 #normalizeMacros(MAX_VEC_SIZE)
 
 if isMainModule:
-    var v = vec3(1.0, 0.5, 0)
-    var u = vec3(1.0, 1.0, 0)
-    var c = cross(v,u)
-    echo "Should not use this as main module: $# [$#, $#]" % [$c , $dot(c,v), $dot(c,u)]
+    var v0 = vec3(1.0, 0.5, 0)
+    var u0 = vec3(1.0, 1.0, 0)
+    var c = cross(v0,u0)
 
+    var v1 = vec4(1,2,3,4)
 
+    v1.yz += vec2(10)
+
+    echo v1
 

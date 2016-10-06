@@ -25,13 +25,6 @@ proc `fmod`(a,b:float):float=
     var diff = floor(a/b)*b
     return a-diff
 
-macro defineVectorTypes*(upTo:int):stmt=
-    var upToVec:int = intVal(upTo).int
-    result = newNimNode(nnkStmtList)
-    for i in 1 .. upToVec:
-        var def = "type Vec$1*[T] = distinct array[$1, T]" % [$i]
-        result.add(parseStmt(def))
-
 
 template toA*( v:expr, i:int, T:typedesc):expr=
     array[i,T](v)
@@ -116,18 +109,6 @@ macro multiComponentGetterList*(upTo:int):stmt=
 
 proc getComponentIx(shiftn,length,componentIx:int):int=
     floor(shiftn.fmod( pow(length,componentIx) )/pow(length,componentIx-1) ).int
-
-proc shifts(data:seq[char]):seq[seq[char]]=
-
-    var length = data.len
-    var shifts = pow(length, length)
-    result = @[]
-
-    for i in 0..shifts-1:
-        var cs:seq[char] = @[]
-        for j in 1..length:
-            cs.add( data[getComponentIx(i, length, j)] )
-        result.add(cs)
 
 proc flatten[T](s:seq[seq[T]]):seq[T]=
     result = @[]
