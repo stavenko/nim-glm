@@ -19,7 +19,7 @@ diagonalConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixScalarOperations(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 matrixComparison(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
-proc inverse*[T](m:var Mat2x2[T]):Mat2x2[T]=
+proc inverse*[T](m:Mat2x2[T]):Mat2x2[T]=
     var
         OneOverDeterminant = (1.T) /
             ( + m[0][0] * m[1][1] -
@@ -29,7 +29,7 @@ proc inverse*[T](m:var Mat2x2[T]):Mat2x2[T]=
                 vec2( - m[1][0] * OneOverDeterminant,
                       + m[0][0] * OneOverDeterminant))
 
-proc inverse*[T](m:var Mat3x3[T]):Mat3x3[T]=
+proc inverse*[T](m:Mat3x3[T]):Mat3x3[T]=
     var
         oD = (1.T) /
             ( + m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) -
@@ -47,7 +47,7 @@ proc inverse*[T](m:var Mat3x3[T]):Mat3x3[T]=
     result[1][2] = - (m[0][0] * m[1][2] - m[1][0] * m[0][2]) * oD
     result[2][2] = + (m[0][0] * m[1][1] - m[1][0] * m[0][1]) * oD
 
-proc inverse*[T](m:var Mat4x4[T]):Mat4x4[T]=
+proc inverse*[T](m:Mat4x4[T]):Mat4x4[T]=
     var
         Coef00:T = (m[2][2]  * m[3][3]) - (m[3][2]  *  m[2][3])
         Coef02:T = (m[1][2]  * m[3][3]) - (m[3][2]  *  m[1][3])
@@ -116,14 +116,14 @@ matrixUnaryScalarOperations(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
 if isMainModule:
 
-    var m22 = mat3(vec3(1.0, 5, 10), vec3(0.66,1,70), vec3(10.0,2.0,1))
-    var v2  = vec3(2.0)
-    var m22i = inverse(m22)
-    var v2m = v2 * m22
-    var v2r = v2m * m22i
+    let m22 = mat3(vec3(1.0, 5, 10), vec3(0.66,1,70), vec3(10.0,2.0,1))
+    let v2  = vec3(2.0)
+    let m22i = inverse(m22)
+    let v2m = v2 * m22
+    let v2r = v2m * m22i
 
-
-    m22 *= 3
-    echo m22
+    var m22v = m22
+    m22v *= 3
+    echo m22v
 
     echo mat3(5.0)
