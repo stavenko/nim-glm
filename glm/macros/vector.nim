@@ -55,17 +55,17 @@ macro arrSetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
     result = newNimNode(nnkStmtList)
     for i in 1..upToVec:
-        result.add(parseStmt("proc `[]=`*[T](v:var Vec$1[T], ix:int, c:T) = array[$1,T](v)[ix]=c" % [$i] ))
+        result.add(parseStmt("proc `[]=`*[T](v:var Vec$1[T], ix:int, c:T) {.inline.} = array[$1,T](v)[ix]=c" % [$i] ))
 
 macro arrGetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
     result = newNimNode(nnkStmtList)
     for i in 1..upToVec:
-        result.add(parseStmt("proc `[]`*[T](v:Vec$1[T], ix:int):T = array[$1,T](v)[ix]" % [$i] ))
+        result.add(parseStmt("proc `[]`*[T](v:Vec$1[T], ix:int):T {.inline.} = array[$1,T](v)[ix]" % [$i] ))
 
 macro addrGetter*(upTo:int):stmt=
     var upToVec = intVal(upTo)
-    let procT = """proc caddr*[T](v:var Vec$1[T]):ptr T=
+    let procT = """proc caddr*[T](v:var Vec$1[T]):ptr T {.inline.} =
         ## Address getter to pass vector to native-C openGL functions as pointers
         array[$1, T](v)[0].addr"""
     result = newNimNode(nnkStmtList)
@@ -76,8 +76,8 @@ macro addrGetter*(upTo:int):stmt=
 macro componentGetterSetters*(upTo:int):stmt=
     var upToVec = intVal(upTo)
     result = newNimNode(nnkStmtList)
-    let templG = "proc $1*[T](v:Vec$2[T]):T=array[$2,T](v)[$3]"
-    let templS = "proc `$1=`*[T](v:var Vec$2[T],c:T)=(array[$2,T](v))[$3]=c"
+    let templG = "proc $1*[T](v:Vec$2[T]):T {.inline.} =array[$2,T](v)[$3]"
+    let templS = "proc `$1=`*[T](v:var Vec$2[T],c:T) {.inline.} =(array[$2,T](v))[$3]=c"
     let tr = ["x","y","z","w"]
     let col= ["r","g","b","a"]
     for i in low(tr)..high(tr):
