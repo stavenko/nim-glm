@@ -4,79 +4,133 @@ import macros
 import strutils
 import sequtils
 import math
+import arnelib
+
+
+template `/`(a,b: int32): int32 = a div b
+template `/`(a,b: int64): int64 = a div b
+template `/`(a,b: int): int = a div b
+proc `/=`(a: var SomeInteger; b: SomeInteger): void =
+  a = a div b 
 
 ##Vector module contains all types and functions to manipulate vectors
-##
 type
   Vec*[N : static[int], T] = object
-    arr: array[N, T]
+    arr*: array[N, T]
     
 proc `$`*(v: Vec) : string =  $v.arr
 
-template mathPerComponent(op: untyped): untyped =
-  proc op*(v,u: Vec): Vec =
-    for i in 0 ..< Vec.N:
-      result[i] = op(v[i], u[i])
+proc spaces(num: int): string =
+  result = newString(num)
+  for c in result.mitems:
+    c = ' '
+  
+proc alignRight*[N,T](v: array[N, T]) : array[N,string] =
+  var maxLen = 0
+  for i, val in v:
+    result[i] = $val
+    maxLen = max(maxLen, result[i].len)
+  for i, str in result.mpairs:
+    str.insert(spaces(maxLen - str.len))
 
-  proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
+proc alignLeft*[N,T](v: array[N, T]) : array[N,string] =
+  var maxLen = 0
+  for i, val in v:
+    result[i] = $val
+    maxLen = max(maxLen, result[i].len)
+  for i, str in result.mpairs:
+    str.add(spaces(maxLen - str.len))
+
+proc alignChar*[N,T](v: array[N, T]; c: char) : array[N,string] =
+  for i, val in v:
+    result[i] = $val
+  
+  var lenLeft  : array[N, int]
+  var maxLenLeft = 0
+  var lenRight : array[N, int]
+  var maxLenRight = 0
+
+  for i, str in result:
+    let index = str.indexOf(c)
+    let length = str.len
+    lenLeft[i]  = index
+    maxLenLeft = max(maxLenLeft, lenLeft[i])
+    lenRight[i] = length - index - 1
+    maxLenRight = max(maxLenRight, lenRight[i])
+
+  for i, str in result.mpairs:
+    str.insert(spaces(maxLenLeft  - lenLeft[i]))
+    str.add(   spaces(maxLenRight - lenRight[i]))
+  
+proc columnFormat*[N,T](v: Vec[N, T]) : array[N,string] =
+  when T is SomeInteger:
+    result = v.arr.alignRight
+  elif T is SomeReal:
+    result = v.arr.alignChar('.')
+  else:
+    result = v.arr.alignLeft
+  
+template mathPerComponent(opName, op: untyped): untyped =
+  proc opName*[N,T](v,u: Vec[N,T]): Vec[N,T] =
     for i in 0 ..< N:
-      result[i] = op(v[i], val)
+      result.arr[i] = op(v.arr[i], u.arr[i])
 
-  proc op*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
+  proc opName*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
     for i in 0 ..< N:
-      result[i] = op(val, v[i])
+      result.arr[i] = op(v.arr[i], val)
 
-
+  proc opName*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
+    for i in 0 ..< N:
+      result.arr[i] = op(val, v.arr[i])
     
-mathPerComponent(`+`)
-mathPerComponent(`-`)
-mathPerComponent(`/`)
-mathPerComponent(`*`)
+mathPerComponent(`+`, `+`)
+mathPerComponent(`-`, `-`)
+mathPerComponent(`/`, `/`)
+mathPerComponent(`*`, `*`)
 
-template mathInpl(op: untyped): untyped =
-  proc op*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
+template mathInpl(opName): untyped =
+  proc opName*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
     for i in 0 ..< N:
-      op(v.arr[i], u[i])
+      opName(v.arr[i], u.arr[i])
 
+  proc opName*[N,T](v: var Vec[N,T]; x: T): void =
+    for i in 0 ..< N:
+      opName(v.arr[i], x)
+  
 mathInpl(`+=`)
 mathInpl(`-=`)
 mathInpl(`*=`)
 mathInpl(`/=`)
 
-proc `[]=`*[N,T](v:var Vec[N,T]; ix:int; c:T) = v.arr[ix] = c
-proc `[]`*[N,T](v: Vec[N,T]; ix: int): T = v.arr[ix]
-proc `[]`*[N,T](v: var Vec[N,T]; ix: int): var T = v.arr[ix]
+proc `[]=`*[N,T](v:var Vec[N,T]; ix:int; c:T): void {.inline.} =
+    v.arr[ix] = c
+proc `[]`*[N,T](v: Vec[N,T]; ix: int): T {.inline.} =
+  v.arr[ix]
+proc `[]`*[N,T](v: var Vec[N,T]; ix: int): var T {.inline.} =
+  v.arr[ix]
+
+#########################
+# constructor functions #
+#########################
 
 proc vec2*[T](x,y: T): Vec[2,T] =
-  result[0] = x
-  result[1] = y
+  result.arr = [x,y]
 
 proc vec2*[T](arg: T): Vec[2,T] =
-  result[0] = arg
-  result[1] = arg
+  result.arr = [arg,arg]
   
 proc vec3*[T](x,y,z : T): Vec[3,T] =
-  result[0] = x
-  result[1] = y
-  result[2] = z
+  result.arr = [x,y,z]
 
 proc vec3*[T](arg : T): Vec[3,T] =
-  result[0] = arg
-  result[1] = arg
-  result[2] = arg
+  result.arr = [arg,arg,arg]
 
 proc vec4*[T](x,y,z,w : T): Vec[4,T] =
-  result[0] = x
-  result[1] = y
-  result[2] = z
-  result[3] = w
+  result.arr = [x,y,z,w]
 
 proc vec4*[T](arg : T): Vec[4,T] =
-  result[0] = arg
-  result[1] = arg
-  result[2] = arg
-  result[3] = arg
-  
+  result.arr = [arg,arg,arg,arg]
+
 proc subVec[N,T](v: var Vec[N,T]; offset, length: static[int]): var Vec[length,T] =
   cast[ptr Vec[length, T]](v.arr[offset].addr)[]
   
@@ -173,21 +227,74 @@ proc caddr*[N,T](v:var Vec[N,T]): ptr T =
 proc length2*(v: Vec): auto = dot(v,v)
 proc length*(v: Vec): auto = sqrt(dot(v,v))
 
-proc cross*[T](x,y:Vec[3,T]): Vec[3,T] =
-    vec3(x.y * y.z - y.y * x.z,
-         x.z * y.x - y.z * x.x,
-         x.x * y.y - y.x * x.y)
+proc cross*[T](v1,v2:Vec[3,T]): Vec[3,T] =
+  v1.yzx * v2.zxy - v1.zxy * v2.yzx
 
-#normalizeMacros(MAX_VEC_SIZE)
+proc normalize*[N,T](v: Vec[N,T]): Vec[N,T] = v * (T(1) div v.length)
 
+proc floor*[N,T](v : Vec[N,T]) : Vec[N,T] =
+  for i in 0 .. N:
+    result.arr[i] = floor(v.arr[i])
+
+proc ceil*[N,T](v: Vec[N,T]): Vec[N,T] =
+  for i in 0 .. N:
+    result.arr[i] = ceil(v.arr[i])
+  
+proc clamp*[N,T](arg: Vec[N,T]; minVal, maxVal: T): Vec[N,T] =
+  for i in 0 .. N:
+    result.arr[i] = clamp(arg.arr[i], minVal, maxVal)
+
+proc clamp*[N,T](arg, minVal, maxVal: Vec[N,T]): Vec[N,T] =
+  for i in 0 .. N:
+    result.arr[i] = clamp(arg.arr[i], minVal.arr[i], maxVal.arr[i])
+  
+
+##############
+# type names #
+##############
+
+type
+  Vec4*[T] = Vec[4,T]
+  Vec3*[T] = Vec[3,T]
+  Vec2*[T] = Vec[2,T]
+
+
+  
+type
+  Vec4u8* = Vec[4, uint8]
+  Vec4f*  = Vec[4, float32]
+  Vec3f*  = Vec[3, float32]
+  Vec2f*  = Vec[2, float32]
+  Vec4d*  = Vec[4, float64]
+  Vec3d*  = Vec[3, float64]
+  Vec2d*  = Vec[2, float64]
+  Vec4i*  = Vec[4, int32]
+  Vec3i*  = Vec[3, int32]
+  Vec2i*  = Vec[2, int32]
+  Vec4l*  = Vec[4, int64]
+  Vec3l*  = Vec[3, int64]
+  Vec2l*  = Vec[2, int64]
+  
+  
 if isMainModule:
     var v0 = vec3(1.0, 0.5, 0)
     var u0 = vec3(1.0, 1.0, 0)
     var c = cross(v0,u0)
 
-    var v1 = vec4(1,2,3,4)
+    var v1 = vec4(1,2,3,4) / 2
 
     v1.yz += vec2(10)
 
+    v1.zw /= vec2(3)
+
     echo v1
+
+    for row in columnFormat( vec4(0.001, 1.000, 100.0, 0) ):
+      echo row
+
+    for row in columnFormat( vec4(1,10,100,1000) ):
+      echo row
+
+    for row in columnFormat( vec4("a", "ab", "abc", "abcd") ):
+      echo row
 
