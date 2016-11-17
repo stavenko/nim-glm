@@ -1,12 +1,13 @@
-import macros.vector
-import macros.functions
-import macros
+#import macros.vector
+#import macros.functions
+#import macros
+
 import strutils
 import sequtils
-import math
-import arnelib
+import macros,math
 
-
+# this is a dirty hack to have integer division behave like in C/C++/glsl etc.
+# don't export functions, maybe disable
 template `/`(a,b: int32): int32 = a div b
 template `/`(a,b: int64): int64 = a div b
 template `/`(a,b: int): int = a div b
@@ -18,7 +19,13 @@ type
   Vec*[N : static[int], T] = object
     arr*: array[N, T]
     
-proc `$`*(v: Vec) : string =  $v.arr
+proc `$`*(v: Vec) : string =
+  result = "["
+  for i, val in v.arr:
+    result &= $val
+    if i != v.N - 1:
+      result &= "  "
+  result &= "]"
 
 proc spaces(num: int): string =
   result = newString(num)
@@ -51,7 +58,7 @@ proc alignChar*[N,T](v: array[N, T]; c: char) : array[N,string] =
   var maxLenRight = 0
 
   for i, str in result:
-    let index = str.indexOf(c)
+    let index = str.find(c)
     let length = str.len
     lenLeft[i]  = index
     maxLenLeft = max(maxLenLeft, lenLeft[i])
@@ -70,23 +77,24 @@ proc columnFormat*[N,T](v: Vec[N, T]) : array[N,string] =
   else:
     result = v.arr.alignLeft
   
-template mathPerComponent(opName, op: untyped): untyped =
-  proc opName*[N,T](v,u: Vec[N,T]): Vec[N,T] =
+template mathPerComponent(op: untyped): untyped =
+  proc op*[N,T](v,u: Vec[N,T]): Vec[N,T] =
     for i in 0 ..< N:
       result.arr[i] = op(v.arr[i], u.arr[i])
 
-  proc opName*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
+  proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
     for i in 0 ..< N:
       result.arr[i] = op(v.arr[i], val)
 
-  proc opName*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
+  proc op*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
     for i in 0 ..< N:
       result.arr[i] = op(val, v.arr[i])
     
-mathPerComponent(`+`, `+`)
-mathPerComponent(`-`, `-`)
-mathPerComponent(`/`, `/`)
-mathPerComponent(`*`, `*`)
+mathPerComponent(`+`)
+mathPerComponent(`-`)
+mathPerComponent(`/`)
+mathPerComponent(`*`)
+mathPerComponent(`div`)
 
 template mathInpl(opName): untyped =
   proc opName*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
@@ -134,7 +142,6 @@ proc vec4*[T](arg : T): Vec[4,T] =
 proc subVec[N,T](v: var Vec[N,T]; offset, length: static[int]): var Vec[length,T] =
   cast[ptr Vec[length, T]](v.arr[offset].addr)[]
   
-proc head(node: NimNode): NimNode {.compileTime.} = node[0]
   
 proc growingIndices(indices: varargs[int]): bool =
   ## returns true when every argument is bigger than all previous arguments
@@ -149,6 +156,8 @@ proc continuousIndices(indices: varargs[int]): bool =
       return false
   return true
 
+  
+proc head(node: NimNode): NimNode {.compileTime.} = node[0]  
   
 proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
   result.newSeq(0)
@@ -175,12 +184,18 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
     result.add head quote do:
       proc `getIdent`*[N,T](`v`: Vec[N,T]): Vec[`Nlit`,T] = `constructCall`
 
+    #if continuousIndices(indices):
+    #  echo result.back.repr
+    
     if continuousIndices(indices):
+      #echo result.back.repr
+      
       let offsetLit = newLit(indices[0])
       let lengthLit = newLit(indices.len)
       result.add head quote do:
-        proc `getIdent`*[N,T](`v`: var Vec[N,T]): var Vec[`Nlit`,T] =
-          `v`.subVec(`offsetLit`, `lengthLit`)
+        proc `getIdent`*[N,T](v: var Vec[N,T]): var Vec[`Nlit`,T] =
+          v.subVec(`offsetLit`, `lengthLit`)
+    
 
   else:
     let lit = newLit(indices[0])
@@ -230,7 +245,7 @@ proc length*(v: Vec): auto = sqrt(dot(v,v))
 proc cross*[T](v1,v2:Vec[3,T]): Vec[3,T] =
   v1.yzx * v2.zxy - v1.zxy * v2.yzx
 
-proc normalize*[N,T](v: Vec[N,T]): Vec[N,T] = v * (T(1) div v.length)
+proc normalize*[N,T](v: Vec[N,T]): Vec[N,T] = v * (T(1) / v.length)
 
 proc floor*[N,T](v : Vec[N,T]) : Vec[N,T] =
   for i in 0 .. N:
@@ -281,7 +296,7 @@ if isMainModule:
     var u0 = vec3(1.0, 1.0, 0)
     var c = cross(v0,u0)
 
-    var v1 = vec4(1,2,3,4) / 2
+    var v1 = vec4(1,2,3,4) div 2
 
     v1.yz += vec2(10)
 

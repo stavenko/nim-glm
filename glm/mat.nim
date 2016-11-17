@@ -1,25 +1,34 @@
-import strutils, macros
-#import ./arrayUtils
-import macros.matrix
 import vec
 
 type
   Mat[M,N: static[int]; T] = object
     arr: array[M, Vec[N,T]]
 
-proc `$`(m: Mat): string =
+proc `$`*(m: Mat): string =
   var cols: array[m.M, array[m.N, string]]
   for i, col in m.arr:
     cols[i] = columnFormat(col)
 
   result = ""
   for row in 0 ..< m.N:
-    result &= '['
+    if row == 0:
+      result &= "⎡"
+    elif row == m.N - 1:
+      result &= "⎣"
+    else:
+      result &= "⎢"
+      
     for col in 0 ..< m.M:
       if col != 0:
-        result &= ", "
+        result &= "  "
       result &= cols[col][row]
-    result &= "]\n"         
+      
+    if row == 0:
+      result &= "⎤\n"
+    elif row == m.N - 1:
+      result &= "⎦\n"
+    else:
+      result &= "⎥\n"
     
 proc `[]=`*[M,N,T](v:var Mat[M,N,T]; ix:int; c:Vec[N,T]): void {.inline.} =
     v.arr[ix] = c
@@ -35,17 +44,27 @@ proc `[]`*[M,N,T](v: Mat[M,N,T]; ix, iy: int): T {.inline.} =
 proc `[]`*[M,N,T](v: var Mat[M,N,T]; ix, iy: int): var T {.inline.} =
   v.arr[ix].arr[iy]
 
-  
-proc caddr[M,N,T](m: var Mat[M,N,T]): ptr T = m.arr[0].arr[0].addr
+proc caddr*[M,N,T](m: var Mat[M,N,T]): ptr T = m.arr[0].arr[0].addr
 
 ##############
 # type alias #
 ##############
 
 type
+  Mat4x4*[T] = Mat[4,4,T]
+  Mat3x4*[T] = Mat[3,4,T]
+  Mat2x4*[T] = Mat[2,4,T]
+  Mat4x3*[T] = Mat[4,3,T]
+  Mat3x3*[T] = Mat[3,3,T]
+  Mat2x3*[T] = Mat[2,3,T]
+  Mat4x2*[T] = Mat[4,2,T]
+  Mat3x2*[T] = Mat[3,2,T]
+  Mat2x2*[T] = Mat[2,2,T]
+  
   Mat4*[T] = Mat[4,4,T]
   Mat3*[T] = Mat[3,3,T]
   Mat2*[T] = Mat[2,2,T]
+
   
 type
   Mat4f*  = Mat[4, 4, float32]
@@ -73,103 +92,157 @@ proc diag*[N,T](v : Vec[N,T]): Mat[N,N,T] =
 # type constructor #
 ####################  
   
-proc mat4[T](a,b,c,d: Vec4[T]) : Mat4[T] =
+proc mat4*[T](a,b,c,d: Vec4[T]) : Mat4[T] =
   result.arr = [a,b,c,d]
   
-proc mat3[T](a,b,c: Vec3[T]) : Mat3[T] =
+proc mat3*[T](a,b,c: Vec3[T]) : Mat3[T] =
   result.arr = [a,b,c]
 
-proc mat2[T](a,b,c,d: Vec2[T]) : Mat2[T] =
+proc mat2*[T](a,b,c,d: Vec2[T]) : Mat2[T] =
   result.arr = [a,b]
 
-proc mat4[T](v: Vec4[T]): Mat4[T] =
+proc mat4*[T](v: Vec4[T]): Mat4[T] =
   for i in 0 .. 3:
     result.arr[i].arr[i] = v.arr[i]
 
-proc mat3[T](v: Vec3[T]): Mat3[T] =
+proc mat3*[T](v: Vec3[T]): Mat3[T] =
   for i in 0 .. 2:
     result.arr[i].arr[i] = v.arr[i]
   
-proc mat2[T](v: Vec2[T]): Mat2[T] =
+proc mat2*[T](v: Vec2[T]): Mat2[T] =
   for i in 0 .. 1:
     result.arr[i].arr[i] = v.arr[i]
   
-proc mat4[T](s: T): Mat4[T] =
+proc mat4*[T](s: T): Mat4[T] =
   for i in 0 .. 3:
     result.arr[i].arr[i] = s
 
-proc mat3[T](s: T): Mat3[T] =
+proc mat3*[T](s: T): Mat3[T] =
   for i in 0 .. 2:
     result.arr[i].arr[i] = s
 
-proc mat2[T](s: T): Mat2[T] =
+proc mat2*[T](s: T): Mat2[T] =
   for i in 0 .. 1:
     result.arr[i].arr[i] = s
 
+proc mat4*[T]() : Mat4[T] =
+  for i in 0 .. 3:
+    result.arr[i].arr[i] = T(1)
+
+proc mat3*[T]() : Mat3[T] =
+  for i in 0 .. 2:
+    result.arr[i].arr[i] = T(1)
+
+proc mat2*[T]() : Mat2[T] =
+  for i in 0 .. 1:
+    result.arr[i].arr[i] = T(1)
   
-proc mat4f(a,b,c,d: Vec4f) : Mat4f =
+proc mat4f*() : Mat4f =
+  for i in 0 .. 3:
+    result.arr[i].arr[i] = 1
+
+proc mat3f*() : Mat3f =
+  for i in 0 .. 2:
+    result.arr[i].arr[i] = 1
+
+proc mat2f*() : Mat2f =
+  for i in 0 .. 1:
+    result.arr[i].arr[i] = 1
+
+proc mat4d*() : Mat4d =
+  for i in 0 .. 3:
+    result.arr[i].arr[i] = 1
+
+proc mat3d*() : Mat3d =
+  for i in 0 .. 2:
+    result.arr[i].arr[i] = 1
+
+proc mat2d*() : Mat2d =
+  for i in 0 .. 1:
+    result.arr[i].arr[i] = 1
+    
+proc mat4i*() : Mat4i =
+  for i in 0 .. 3:
+    result.arr[i].arr[i] = 1
+
+proc mat3i*() : Mat3i =
+  for i in 0 .. 2:
+    result.arr[i].arr[i] = 1
+
+proc mat2i*() : Mat2i =
+  for i in 0 .. 1:
+    result.arr[i].arr[i] = 1
+
+proc mat4l*() : Mat4l =
+  for i in 0 .. 3:
+    result.arr[i].arr[i] = 1
+
+proc mat3l*() : Mat3l =
+  for i in 0 .. 2:
+    result.arr[i].arr[i] = 1
+
+proc mat2l*() : Mat2l =
+  for i in 0 .. 1:
+    result.arr[i].arr[i] = 1
+  
+proc mat4f*(a,b,c,d: Vec4f) : Mat4f =
   result.arr = [a,b,c,d]
 
-proc mat3f(a,b,c: Vec3f) : Mat3f =
+proc mat3f*(a,b,c: Vec3f) : Mat3f =
   result.arr = [a,b,c]
 
-proc mat2f(a,b: Vec2f) : Mat2f =
+proc mat2f*(a,b: Vec2f) : Mat2f =
   result.arr = [a,b]
 
-proc mat4d(a,b,c,d: Vec4d) : Mat4d =
+proc mat4d*(a,b,c,d: Vec4d) : Mat4d =
   result.arr = [a,b,c,d]
 
-proc mat3d(a,b,c: Vec3d) : Mat3d =
+proc mat3d*(a,b,c: Vec3d) : Mat3d =
   result.arr = [a,b,c]
 
-proc mat2d(a,b: Vec2d) : Mat2d =
+proc mat2d*(a,b: Vec2d) : Mat2d =
   result.arr = [a,b]
 
-proc mat4i(a,b,c,d: Vec4i) : Mat4i =
+proc mat4i*(a,b,c,d: Vec4i) : Mat4i =
   result.arr = [a,b,c,d]
 
-proc mat3i(a,b,c: Vec3i) : Mat3i =
+proc mat3i*(a,b,c: Vec3i) : Mat3i =
   result.arr = [a,b,c]
 
-proc mat2i(a,b: Vec2i) : Mat2i =
+proc mat2i*(a,b: Vec2i) : Mat2i =
   result.arr = [a,b]
 
-proc mat4l(a,b,c,d: Vec4l) : Mat4l =
+proc mat4l*(a,b,c,d: Vec4l) : Mat4l =
   result.arr = [a,b,c,d]
 
-proc mat3l(a,b,c: Vec3l) : Mat3l =
+proc mat3l*(a,b,c: Vec3l) : Mat3l =
   result.arr = [a,b,c]
 
-proc mat2l(a,b: Vec2l) : Mat2l =
+proc mat2l*(a,b: Vec2l) : Mat2l =
   result.arr = [a,b]
 
-#emptyConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
+#proc `==`(m1,m2: Mat): Mat = 
+  
 #diagonalConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 #matrixComparison(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
-proc det[T](m: Mat2[T]): T =
-   m[0][0] * m[1][1] - m[1][0] * m[0][1]
+proc det*[T](m: Mat2[T]): T =
+   m[0,0] * m[1,1] - m[1,0] * m[0,1]
 
-proc det[T](m: Mat3[T]): T = (
-  + m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) -
-    m[1][0] * (m[0][1] * m[2][2] - m[2][1] * m[0][2]) +
-    m[2][0] * (m[0][1] * m[1][2] - m[1][1] * m[0][2])
-)
-
-proc det[T](m: Mat4[T]): T =
-  var tmpOuter : Mat2[T]
-
-  for i in 0 .. 1:
-    for j in 0 .. 1:
-      var  tmpInner : Mat2[T]
-
-      for k in 0 .. 1:
-        for l in 0 .. 1:
-          tmpInner[k][l] = m[2*i + k][2*j + l]
-
-      tmpOuter[i,j] = det(tmpInner)
-
-  result = det(tmpOuter)
+proc det*[T](m: Mat3[T]): T =
+  + m[0,0] * (m[1,1] * m[2,2] - m[2,1] * m[1,2]) -
+    m[1,0] * (m[0,1] * m[2,2] - m[2,1] * m[0,2]) +
+    m[2,0] * (m[0,1] * m[1,2] - m[1,1] * m[0,2])
+         
+proc det*[T](m: Mat4[T]): T =
+  if m[0,0] != 0:
+    result += m[0,0] * det(mat3(m[1].yzw, m[2].yzw, m[3].yzw))
+  if m[0,1] != 0:
+    result -= m[0,1] * det(mat3(m[1].xzw, m[2].xzw, m[3].xzw))
+  if m[0,2] != 0:
+    result += m[0,2] * det(mat3(m[1].xyw, m[2].xyw, m[3].xyw))
+  if m[0,3] != 0:
+    result -= m[0,3] * det(mat3(m[1].xyz, m[2].xyz, m[3].xyz))
 
 proc inverse*[T](m: Mat2[T]): Mat2[T]=
   # one over determinat
@@ -317,11 +390,10 @@ if isMainModule:
 
   let m22 = mat3(vec3(1.0, 5, 10), vec3(0.66,1,70), vec3(10.0,2.0,1))
   let m22i = inverse(m22)
-  let v2  = vec3(2.0)
 
   echo m22 * m22i
     
-  let v2m = v2 * m22
+  let v2m = vec3(2.0) * m22
   let v2r = v2m * m22i
 
   var m22v = m22
@@ -332,9 +404,20 @@ if isMainModule:
 
   echo det(diag(vec4(1,2,3,4)))
 
-#type
-#  SomeVec* = Vec4 | Vec3 | Vec2
-#  SomeMat* = Mat4x4 | Mat4x3 | Mat4x2 | Mat3x4 | Mat3x3 | Mat3x2 | Mat2x4 | Mat2x3 | Mat2x2
+  let v0 = vec4(3,0,5,6)
+  let v1 = vec4(7,2,4,6)
+  let v2 = vec4(3,-1,3,4)
+  let v3 = vec4(0,1,2,-1)
+
+  let someMat = mat4(v0,v1,v2,v3)
+
+  echo "someMat:\n", someMat
+  echo "det: ", someMat.det
+
+  var mm : Mat3x2[int]
+  mm[1] = vec2(33)
+
+  echo mm
 
 template numCols*[N,M,T](t : typedesc[Mat[N,M,T]]): int = N
 template numRows*[N,M,T](t : typedesc[Mat[N,M,T]]): int = M
