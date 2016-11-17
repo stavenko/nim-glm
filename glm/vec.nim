@@ -78,15 +78,17 @@ proc columnFormat*[N,T](v: Vec[N, T]) : array[N,string] =
     result = v.arr.alignLeft
   
 template mathPerComponent(op: untyped): untyped =
-  proc op*[N,T](v,u: Vec[N,T]): Vec[N,T] =
+  # TODO this is a good place for simd optimization
+  
+  proc op*[N,T](v,u: Vec[N,T]): Vec[N,T] {.inline.} =
     for i in 0 ..< N:
       result.arr[i] = op(v.arr[i], u.arr[i])
 
-  proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
+  proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] {.inline.} =
     for i in 0 ..< N:
       result.arr[i] = op(v.arr[i], val)
 
-  proc op*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
+  proc op*[N,T](val: T; v: Vec[N,T]): Vec[N,T] {.inline.} =
     for i in 0 ..< N:
       result.arr[i] = op(val, v.arr[i])
     
@@ -121,27 +123,26 @@ proc `[]`*[N,T](v: var Vec[N,T]; ix: int): var T {.inline.} =
 # constructor functions #
 #########################
 
-proc vec2*[T](x,y: T): Vec[2,T] =
+proc vec2*[T](x,y: T): Vec[2,T] {.inline.} =
   result.arr = [x,y]
 
-proc vec2*[T](arg: T): Vec[2,T] =
+proc vec2*[T](arg: T): Vec[2,T] {.inline.} =
   result.arr = [arg,arg]
   
-proc vec3*[T](x,y,z : T): Vec[3,T] =
+proc vec3*[T](x,y,z : T): Vec[3,T] {.inline.} =
   result.arr = [x,y,z]
 
-proc vec3*[T](arg : T): Vec[3,T] =
+proc vec3*[T](arg : T): Vec[3,T] {.inline.} =
   result.arr = [arg,arg,arg]
 
-proc vec4*[T](x,y,z,w : T): Vec[4,T] =
+proc vec4*[T](x,y,z,w : T): Vec[4,T] {.inline.} =
   result.arr = [x,y,z,w]
 
-proc vec4*[T](arg : T): Vec[4,T] =
+proc vec4*[T](arg : T): Vec[4,T] {.inline.} =
   result.arr = [arg,arg,arg,arg]
 
-proc subVec[N,T](v: var Vec[N,T]; offset, length: static[int]): var Vec[length,T] =
+proc subVec[N,T](v: var Vec[N,T]; offset, length: static[int]): var Vec[length,T] {.inline.} =
   cast[ptr Vec[length, T]](v.arr[offset].addr)[]
-  
   
 proc growingIndices(indices: varargs[int]): bool =
   ## returns true when every argument is bigger than all previous arguments
@@ -156,9 +157,8 @@ proc continuousIndices(indices: varargs[int]): bool =
       return false
   return true
 
-  
 proc head(node: NimNode): NimNode {.compileTime.} = node[0]  
-  
+
 proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
   result.newSeq(0)
   
@@ -172,17 +172,20 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
   let setIdent = ident(name & '=')
 
   if indices.len > 1:
-    let constructCall = newCall(ident("vec" & $indices.len))
+
+    let bracket = nnkBracket.newTree
+    
     let Nlit = newLit(indices.len)
     let v = genSym(nskParam, "v")
 
     for idx in indices:
       let lit = newLit(idx)
-      constructCall.add head quote do:
-        `v`[`lit`]
+      bracket.add head quote do:
+        `v`.arr[`lit`]
 
     result.add head quote do:
-      proc `getIdent`*[N,T](`v`: Vec[N,T]): Vec[`Nlit`,T] = `constructCall`
+      proc `getIdent`*[N,T](`v`: Vec[N,T]): Vec[`Nlit`,T] {.inline.} =
+        Vec[`Nlit`,T](arr: `bracket`)
 
     #if continuousIndices(indices):
     #  echo result.back.repr
@@ -193,14 +196,15 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
       let offsetLit = newLit(indices[0])
       let lengthLit = newLit(indices.len)
       result.add head quote do:
-        proc `getIdent`*[N,T](v: var Vec[N,T]): var Vec[`Nlit`,T] =
+        proc `getIdent`*[N,T](v: var Vec[N,T]): var Vec[`Nlit`,T] {.inline.} =
           v.subVec(`offsetLit`, `lengthLit`)
     
 
   else:
     let lit = newLit(indices[0])
     result.add head quote do:
-      proc `getIdent`*(v: Vec): auto = v[`lit`]
+      proc `getIdent`*[N,T](v: Vec[N,T]): T {.inline.} =
+        v.arr[`lit`]
 
   if growingIndices(indices):
     let N2lit = newLit(indices.len)
@@ -212,7 +216,7 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
       let litL = newLit(idx)
       let litR = newLit(i)
       assignments.add head quote do:
-        `v1`[`litL`] = `v2`[`litR`]
+        `v1`.arr[`litL`] = `v2`.arr[`litR`]
       
     result.add head quote do:
       proc `setIdent`*[N,T](`v1`: Vec[N,T]; `v2`: Vec[`N2lit`,T]): void =
@@ -231,11 +235,13 @@ macro genSwizzleOps*(): untyped =
   
 genSwizzleOps()
 
-proc dot*[N,T](u,v: Vec[N,T]): T =
+proc dot*[N,T](u,v: Vec[N,T]): T {. inline .} =
+  # TODO this really should have some simd optimization
+  # matrix multiplication is based on this
   for i in 0 ..< N:
     result += u[i] * v[i]
     
-proc caddr*[N,T](v:var Vec[N,T]): ptr T =
+proc caddr*[N,T](v:var Vec[N,T]): ptr T {.inline.}=
   ## Address getter to pass vector to native-C openGL functions as pointers
   v.arr[0].addr
 
@@ -272,8 +278,6 @@ type
   Vec4*[T] = Vec[4,T]
   Vec3*[T] = Vec[3,T]
   Vec2*[T] = Vec[2,T]
-
-
   
 type
   Vec4u8* = Vec[4, uint8]
@@ -289,7 +293,6 @@ type
   Vec4l*  = Vec[4, int64]
   Vec3l*  = Vec[3, int64]
   Vec2l*  = Vec[2, int64]
-  
   
 if isMainModule:
     var v0 = vec3(1.0, 0.5, 0)

@@ -55,9 +55,9 @@ proc `z=`*[T](q : var Quat[T]; v: T) : void =
 proc `w=`*[T](q : var Quat[T]; v: T) : void =
   q[3] = v
 
-proc quat*[T](x,y,z,w : T) : Quat[T] =
+proc quat*[T](x,y,z,w : T) : Quat[T] {.inline.} =
   result.arr = [x,y,z,w]
-
+  
 proc quat*[T](axis: Vec3[T]; angle: T): Quat[T] =
   let s = sin(angle / 2)
   result.x = axis.x * s
