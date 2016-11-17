@@ -1,2 +1,6 @@
-nimcache
+nimcache/
 *.swp
+
+vec
+mat
+mat_transform
