@@ -152,6 +152,19 @@ proc poseMatrix*[T](translate: Vec3[T]; rotate: Quat[T]; scale: Vec3[T]): Mat4[T
   result[2] = vec4(scalerot_mat[2], 0)
   result[3] = vec4(translate,    1)
 
+
+type
+  Quatf* = Quat[float32]
+  Quatd* = Quat[float64]
+
+proc quatf*(x,y,z,w : float32) : Quatf {.inline.} =  Quatf(arr: [x,y,z,w])
+proc quatf*(axis: Vec3f; angle: float32): Quatf = quat[float32](axis,angle)
+proc quatf*(mat: Mat3f): Quatf = quat[float32](mat)
+
+proc quatd*(x,y,z,w : float64) : Quatd {.inline.} =  Quatd(arr: [x,y,z,w])
+proc quatd*(axis: Vec3d; angle: float64): Quatd = quat[float64](axis,angle)
+proc quatd*(mat: Mat3d): Quatd = quat[float64](mat)
+
   
 #[
 proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =

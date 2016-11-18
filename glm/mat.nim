@@ -379,7 +379,6 @@ proc `*`*[M,N,T](v: Vec[N,T]; m: Mat[M,N,T]): Vec[M, T] =
 import arnelib
   
 proc `*`*[M,N,O,T](m1: Mat[M,N,T]; m2: Mat[O,M,T]): Mat[O,N,T] =
-  echo s"${N}x${M} * ${M}x${O} = ${N}x${O}"
   for i in 0 ..< O:
     result.arr[i] = m1 * m2.arr[i]
 
@@ -406,8 +405,16 @@ proc `*=`*[M,N,T](m: var Mat[M,N,T]; s: T): void =
 proc `*=`*[N,T](m1: var Mat[N,N,T]; m2: Mat[N,N,T]): void =
   for i in 0 ..< N:
     m1.arr
-    
-    
+
+# conversions
+
+proc mat4f*(mat: Mat4d): Mat4f {.inline.} = Mat4f(arr: [mat.arr[0].vec4f, mat.arr[1].vec4f, mat.arr[2].vec4f, mat.arr[3].vec4f])
+proc mat4d*(mat: Mat4f): Mat4d {.inline.} = Mat4d(arr: [mat.arr[0].vec4d, mat.arr[1].vec4d, mat.arr[2].vec4d, mat.arr[3].vec4d])
+
+
+template numCols*[N,M,T](t : typedesc[Mat[N,M,T]]): int = N
+template numRows*[N,M,T](t : typedesc[Mat[N,M,T]]): int = M
+
     
 if isMainModule:
 
@@ -455,8 +462,5 @@ if isMainModule:
   mm[1] = vec2(33)
 
   echo mm
-
-template numCols*[N,M,T](t : typedesc[Mat[N,M,T]]): int = N
-template numRows*[N,M,T](t : typedesc[Mat[N,M,T]]): int = M
 
     
