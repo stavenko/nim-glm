@@ -3,16 +3,12 @@ import glm.mat
 import glm.vec
 import math
 
-
-proc compare[T,A,B](a,b:array[A,array[B,T]]):bool=
-  result = true;
-
-  for i in 0..high(a):
-    for j in 0..high(b[0]):
+proc compare*[N,M,T](a,b: Mat[N, M, T]): bool =
+  for i in 0 ..< N:
+    for j in 0 ..< M:
       if abs(a[i][j]-b[i][j]) > 0.001: 
-        result = false;
-        return;
-
+        return false;
+  return true
 
 suite "Matrix multiplication with major 4":
   setup:
@@ -30,9 +26,7 @@ suite "Matrix multiplication with major 4":
             vec4(153.228, 60.187, 73.3607, 130.572));
 
   test "mat4 * mat4":
-    let a = array[4, array[4, float]](pxq);
-    let b = array[4, array[4,float]](p*q)
-    check(compare(a,b));
+    check(compare(pxq,p*q));
 
 
     
@@ -53,9 +47,7 @@ suite "Matrix multiplication with major 4":
 
 
   test "mat4x3 * mat4":
-    let a = array[4, array[3, float]](pxq);
-    let b = array[4, array[3,float]](p*q)
-    check(compare(a,b));
+    check(compare(pxq, p*q));
 
 suite "Matrix multiplication with major 4":
   setup:
@@ -71,9 +63,7 @@ suite "Matrix multiplication with major 4":
             vec3(100.573, 192.111, 197.266));
 
   test "mat4x3 * mat3x4":
-    let a = array[3, array[3, float]](pxq);
-    let b = array[3, array[3,float]](p*q)
-    check(compare(a,b));
+    check(compare(pxq,p*q));
 
 suite "Matrix multiplication with major 4":
   setup:
@@ -87,9 +77,7 @@ suite "Matrix multiplication with major 4":
             vec3(112.234, 126.103, 141.709));
 
   test "mat4x3 * mat2x4":
-    let a = array[2, array[3, float]](pxq);
-    let b = array[2, array[3,float]](p*q)
-    check(compare(a,b));
+    check(compare(pxq,p*q));
 
 suite "Matrix multiplication with major 4":
   setup:
@@ -107,9 +95,7 @@ suite "Matrix multiplication with major 4":
             vec2(33.6756, 84.1304));
 
   test "mat4x2 * mat4":
-    let a = array[4, array[2, float]](pxq);
-    let b = array[4, array[2,float]](p*q)
-    check(compare(a,b));
+    check(compare(pxq,p*q));
 
 suite "Matrix multiplication with major 4":
   setup:
@@ -126,9 +112,7 @@ suite "Matrix multiplication with major 4":
 
 
   test "mat4x2 * mat3x4":
-    let a = array[3, array[2, float]](pxq);
-    let b = array[3, array[2,float]](p*q)
-    check(compare(a,b));
+    check(compare(pxq,p*q));
 
 suite "Matrix multiplication with major 4":
   setup:
@@ -141,12 +125,8 @@ suite "Matrix multiplication with major 4":
     let pxq = mat2x2(vec2(116.207, 47.8563),
             vec2(118.95, 60.0673));
 
-
-
   test "mat4x2 * mat2x4":
-    let a = array[2, array[2, float]](pxq);
-    let b = array[2, array[2,float]](p*q)
-    check(compare(a,b));
+    check(compare(pxq,p*q));
 
 
 
