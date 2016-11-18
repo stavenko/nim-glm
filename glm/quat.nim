@@ -131,13 +131,13 @@ proc mat3*[T](q : Quat[T]) : Mat3[T] =
   result[1] = vec3(    txy - tzw, 1 - txx - tzz,     tyz + txw);
   result[2] = vec3(    txz + tyw,     tyz - txw, 1 - txx - tyy);
 
-proc mat4*[T](q: Quat[T]; v: Vec4[T] = vec4(T(0),0,0,1)): Mat4f =
+proc mat4*[T](q: Quat[T]; v: Vec4[T]): Mat4[T] =
   let tmp = q.mat3
   result[0] = vec4(tmp[0],0)
   result[1] = vec4(tmp[1],0)
   result[2] = vec4(tmp[2],0)
   result[3] = v
-
+  
 proc mat4*[T](q: Quat[T]; v: Vec3[T]): Mat4[T] = mat4(q, vec4(v,1))
   
 proc poseMatrix*[T](translate: Vec3[T]; rotate: Quat[T]; scale: Vec3[T]): Mat4[T] =

@@ -18,6 +18,11 @@ proc `/=`(a: var SomeInteger; b: SomeInteger): void =
 type
   Vec*[N : static[int], T] = object
     arr*: array[N, T]
+
+type
+  Vec4*[T] = Vec[4,T]
+  Vec3*[T] = Vec[3,T]
+  Vec2*[T] = Vec[2,T]
     
 proc `$`*(v: Vec) : string =
   result = "["
@@ -123,24 +128,22 @@ proc `[]`*[N,T](v: var Vec[N,T]; ix: int): var T {.inline.} =
 # constructor functions #
 #########################
 
-proc vec2*[T](x,y: T): Vec[2,T] {.inline.} =
-  result.arr = [x,y]
+proc vec4*[T](x,y,z,w:T)         : Vec4[T] {.inline.} = Vec4[T](arr: [  x,   y,   z,   w])
+proc vec4*[T](v:Vec3[T],w:T)     : Vec4[T] {.inline.} = Vec4[T](arr: [v.x, v.y, v.z,   w])
+proc vec4*[T](x:T,v:Vec3[T])     : Vec4[T] {.inline.} = Vec4[T](arr: [  x, v.x, v.y, v.z])
+proc vec4*[T](a,b:Vec2[T])       : Vec4[T] {.inline.} = Vec4[T](arr: [a.x, a.y, b.x, b.y])
+proc vec4*[T](v:Vec2[T],z,w:T)   : Vec4[T] {.inline.} = Vec4[T](arr: [v.x, v.y,   z,   w])
+proc vec4*[T](x:T,v:Vec2[T],w:T) : Vec4[T] {.inline.} = Vec4[T](arr: [  x, v.x, v.y,   w])
+proc vec4*[T](x,y:T,v:Vec2[T])   : Vec4[T] {.inline.} = Vec4[T](arr: [  x,   y, v.x, v.y])
+proc vec4*[T](x:T)               : Vec4[T] {.inline.} = Vec4[T](arr: [  x,   x,   x,   x])
 
-proc vec2*[T](arg: T): Vec[2,T] {.inline.} =
-  result.arr = [arg,arg]
-  
-proc vec3*[T](x,y,z : T): Vec[3,T] {.inline.} =
-  result.arr = [x,y,z]
+proc vec3*[T](x,y,z: T)      : Vec3[T] {.inline.} = Vec3[T](arr: [  x,   y,   z])
+proc vec3*[T](v:Vec2[T],z:T) : Vec3[T] {.inline.} = Vec3[T](arr: [v.x, v.y,   z])
+proc vec3*[T](x:T,v:Vec2[T]) : Vec3[T] {.inline.} = Vec3[T](arr: [  x, v.x, v.y])
+proc vec3*[T](x:T)           : Vec3[T] {.inline.} = Vec3[T](arr: [  x,   x,   x])
 
-proc vec3*[T](arg : T): Vec[3,T] {.inline.} =
-  result.arr = [arg,arg,arg]
-
-proc vec4*[T](x,y,z,w : T): Vec[4,T] {.inline.} =
-  result.arr = [x,y,z,w]
-
-proc vec4*[T](arg : T): Vec[4,T] {.inline.} =
-  result.arr = [arg,arg,arg,arg]
-  
+proc vec2*[T](x,y:T) : Vec2[T] {.inline.} = Vec2[T](arr: [x,y])
+proc vec2*[T](x:T)   : Vec2[T] {.inline.} = Vec2[T](arr: [x,x])
 
 proc subVec[N,T](v: var Vec[N,T]; offset, length: static[int]): var Vec[length,T] {.inline.} =
   cast[ptr Vec[length, T]](v.arr[offset].addr)[]
@@ -208,20 +211,27 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
         v.arr[`lit`]
 
   if growingIndices(indices):
-    let N2lit = newLit(indices.len)
-    let v1 = genSym(nskParam, "v1")
-    let v2 = genSym(nskParam, "v2")
+    if indices.len > 1:
+      let N2lit = newLit(indices.len)
+      let v1 = genSym(nskParam, "v1")
+      let v2 = genSym(nskParam, "v2")
 
-    let assignments = newStmtList()
-    for i,idx in indices:
-      let litL = newLit(idx)
-      let litR = newLit(i)
-      assignments.add head quote do:
-        `v1`.arr[`litL`] = `v2`.arr[`litR`]
-      
-    result.add head quote do:
-      proc `setIdent`*[N,T](`v1`: Vec[N,T]; `v2`: Vec[`N2lit`,T]): void =
-        `assignments`
+      let assignments = newStmtList()
+      for i,idx in indices:
+        let litL = newLit(idx)
+        let litR = newLit(i)
+        assignments.add head quote do:
+          `v1`.arr[`litL`] = `v2`.arr[`litR`]
+
+      result.add head quote do:
+        proc `setIdent`*[N,T](`v1`: var Vec[N,T]; `v2`: Vec[`N2lit`,T]): void =
+          `assignments`
+    else:
+      let v1 = genSym(nskParam, "v1")
+      let litL = newLit(indices[0])
+      result.add head quote do:
+        proc `setIdent`*[N,T](`v1`: var Vec[N,T]; val: T): void {.inline.} =
+          `v1`.arr[`litL`] = val
     
 macro genSwizzleOps*(): untyped =
   result = newStmtList()
@@ -255,48 +265,25 @@ proc cross*[T](v1,v2:Vec[3,T]): Vec[3,T] =
 proc normalize*[N,T](v: Vec[N,T]): Vec[N,T] = v * (T(1) / v.length)
 
 proc floor*[N,T](v : Vec[N,T]) : Vec[N,T] =
-  for i in 0 .. N:
+  for i in 0 ..< N:
     result.arr[i] = floor(v.arr[i])
 
 proc ceil*[N,T](v: Vec[N,T]): Vec[N,T] =
-  for i in 0 .. N:
+  for i in 0 ..< N:
     result.arr[i] = ceil(v.arr[i])
   
 proc clamp*[N,T](arg: Vec[N,T]; minVal, maxVal: T): Vec[N,T] =
-  for i in 0 .. N:
+  for i in 0 ..< N:
     result.arr[i] = clamp(arg.arr[i], minVal, maxVal)
 
 proc clamp*[N,T](arg, minVal, maxVal: Vec[N,T]): Vec[N,T] =
-  for i in 0 .. N:
+  for i in 0 ..< N:
     result.arr[i] = clamp(arg.arr[i], minVal.arr[i], maxVal.arr[i])
   
 
-##############
-# type names #
-##############
-
-type
-  Vec4*[T] = Vec[4,T]
-  Vec3*[T] = Vec[3,T]
-  Vec2*[T] = Vec[2,T]
-
-#proc vec4*[T](x,y,z,w:T)         : Vec4[T] = Vec4[T](arr: [  x,   y,   z,   w])
-proc vec4*[T](v:Vec3[T],w:T)     : Vec4[T] = Vec4[T](arr: [v.x, v.y, v.z,   w])
-proc vec4*[T](x:T,v:Vec3[T])     : Vec4[T] = Vec4[T](arr: [  x, v.x, v.y, v.z])
-proc vec4*[T](a,b:Vec2[T])       : Vec4[T] = Vec4[T](arr: [a.x, a.y, b.x, b.y])
-proc vec4*[T](v:Vec2[T],z,w:T)   : Vec4[T] = Vec4[T](arr: [v.x, v.y,   z,   w])
-proc vec4*[T](x:T,v:Vec2[T],w:T) : Vec4[T] = Vec4[T](arr: [  x, v.x, v.y,   w])
-proc vec4*[T](x,y:T,v:Vec2[T])   : Vec4[T] = Vec4[T](arr: [  x,   y, v.x, v.y])
-#proc vec4*[T](x:T)               : Vec4[T] = Vec4[T](arr: [  x,   x,   x,   x])
-
-#proc vec3*[T](x,y,z: T)      : Vec3[T] = Vec3[T](arr: [  x,   y,   z])
-proc vec3*[T](v:Vec2[T],z:T) : Vec3[T] = Vec3[T](arr: [v.x, v.y,   z])
-proc vec3*[T](x:T,v:Vec2[T]) : Vec3[T] = Vec3[T](arr: [  x, v.x, v.y])
-#proc vec3*[T](x:T)           : Vec3[T] = Vec3[T](arr: [  x,   x,   x])
-
-#proc vec2*[T](x,y:T) : Vec2[T] = Vec2[T](arr: [x,y])
-#proc vec2*[T](x:T)   : Vec2[T] = Vec2[T](arr: [x,x])
-
+###################
+# more type names #
+###################
   
 type
   Vec4u8* = Vec[4, uint8]

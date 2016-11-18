@@ -341,14 +341,20 @@ proc inverse*[T](m: Mat4[T]):Mat4[T]=
     Vec2=vec4(m[1,2], m[0,2], m[0,2], m[0,2])
     Vec3=vec4(m[1,3], m[0,3], m[0,3], m[0,3])
 
-    Inv0=vec4((Vec1 * Fac0) - (Vec2 * Fac1) + (Vec3 * Fac2))
-    Inv1=vec4((Vec0 * Fac0) - (Vec2 * Fac3) + (Vec3 * Fac4))
-    Inv2=vec4((Vec0 * Fac1) - (Vec1 * Fac3) + (Vec3 * Fac5))
-    Inv3=vec4((Vec0 * Fac2) - (Vec1 * Fac4) + (Vec2 * Fac5))
+    Inv0: Vec4[T] = (Vec1 * Fac0) - (Vec2 * Fac1) + (Vec3 * Fac2)
+    Inv1: Vec4[T] = (Vec0 * Fac0) - (Vec2 * Fac3) + (Vec3 * Fac4)
+    Inv2: Vec4[T] = (Vec0 * Fac1) - (Vec1 * Fac3) + (Vec3 * Fac5)
+    Inv3: Vec4[T] = (Vec0 * Fac2) - (Vec1 * Fac4) + (Vec2 * Fac5)
 
-    SignA:Vec4[T] = vec4(+1.T, -1, +1, -1)
-    SignB:Vec4[T] = vec4(-1.T, +1, -1, +1)
-    Inverse = mat4(Inv0 * SignA, Inv1 * SignB, Inv2 * SignA, Inv3 * SignB)
+    SignA: Vec4[T] = vec4(+1.T, -1, +1, -1)
+    SignB: Vec4[T] = vec4(-1.T, +1, -1, +1)
+
+    col0 : Vec4[T] = Inv0 * SignA
+    col1 : Vec4[T] = Inv1 * SignB
+    col2 : Vec4[T] = Inv2 * SignA
+    col3 : Vec4[T] = Inv3 * SignB
+    
+    Inverse : Mat4[T] = mat4[T](col0, col1, col2, col3)
 
     Row0 = vec4(Inverse[0,0], Inverse[1,0], Inverse[2,0], Inverse[3,0])
 
