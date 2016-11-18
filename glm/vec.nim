@@ -215,16 +215,9 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
       result.add head quote do:
         proc `getIdent`*[N,T](v: var Vec[N,T]): var Vec[`Nlit`,T] {.inline.} =
           v.subVec(`offsetLit`, `lengthLit`)
+
     
-
-  else:
-    let lit = newLit(indices[0])
-    result.add head quote do:
-      proc `getIdent`*[N,T](v: Vec[N,T]): T {.inline.} =
-        v.arr[`lit`]
-
-  if growingIndices(indices):
-    if indices.len > 1:
+    if growingIndices(indices):
       let N2lit = newLit(indices.len)
       let v1 = genSym(nskParam, "v1")
       let v2 = genSym(nskParam, "v2")
@@ -239,12 +232,20 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
       result.add head quote do:
         proc `setIdent`*[N,T](`v1`: var Vec[N,T]; `v2`: Vec[`N2lit`,T]): void =
           `assignments`
-    else:
-      let v1 = genSym(nskParam, "v1")
-      let litL = newLit(indices[0])
-      result.add head quote do:
-        proc `setIdent`*[N,T](`v1`: var Vec[N,T]; val: T): void {.inline.} =
-          `v1`.arr[`litL`] = val
+
+  else:
+    let lit = newLit(indices[0])
+    result.add quote do:
+      proc `getIdent`*[N,T](v: Vec[N,T]): T {.inline.} =
+        v.arr[`lit`]
+
+      proc `getIdent`*[N,T](v: var Vec[N,T]): var T {.inline.} =
+        v.arr[`lit`]
+
+      proc `setIdent`*[N,T](v: var Vec[N,T]; val: T): void {.inline.} =
+        v.arr[`lit`] = val
+        
+
     
 macro genSwizzleOps*(): untyped =
   result = newStmtList()
@@ -325,6 +326,8 @@ foreachImpl(sqrt)
 # common functions #
 ####################
 
+export math.ceil, math.floor
+
 proc abs*[N,T](v : Vec[N,T]) : Vec[N,T] =
   for i in 0 ..< N:
     result.arr[i] = abs(v.arr[i])
@@ -346,7 +349,6 @@ proc floor*[N,T](v : Vec[N,T]) : Vec[N,T] =
     result.arr[i] = floor(v.arr[i])
 
 proc fract*[T](v : T): T =
-  
   v - floor(v)
   
 proc fract*[N,T](v : Vec[N,T]) : Vec[N,T] =
@@ -381,9 +383,12 @@ proc mix*[N,T](v1,v2: Vec[N,T]; a: T): Vec[N,T] =
   v1 * (1 - a) + v2 * a
 
 proc mix*[N,T](v1,v2,a: Vec[N,T]): Vec[N,T] =
-  # untestedu
+  # untested
   v1 * (1 - a) + v2 * a
 
+proc fmod*(x,y: SomeReal): SomeReal =
+  y * fract(x / y)
+  
 proc fmod*[N,T](v1,v2: Vec[N,T]): Vec[N,T] =
   # untested
   v2 * fract(v1 / v2)
@@ -392,6 +397,9 @@ proc fmod*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
   # untested
   val * fract(v / val)
 
+proc sign*[T](x: T): T =
+  T(x > 0) - T(x < 0)
+  
 proc sign*[N,T](v: Vec[N,T]): Vec[N,T] =
   # untested
   for i in 0 ..< N:
@@ -569,19 +577,19 @@ proc vec4d*(v: Vec4l) : Vec4d {.inline.} = Vec4d(arr: [v.x.float64, v.y.float64,
 proc vec4d*(v: Vec4b) : Vec4d {.inline.} = Vec4d(arr: [v.x.float64, v.y.float64, v.z.float64, v.w.float64])
 
 proc vec4i*(v: Vec4f) : Vec4i {.inline.} = Vec4i(arr: [v.x.int32, v.y.int32, v.z.int32, v.w.int32])
-proc vec4i*(v: Vec4i) : Vec4i {.inline.} = Vec4i(arr: [v.x.int32, v.y.int32, v.z.int32, v.w.int32])
+proc vec4i*(v: Vec4d) : Vec4i {.inline.} = Vec4i(arr: [v.x.int32, v.y.int32, v.z.int32, v.w.int32])
 proc vec4i*(v: Vec4l) : Vec4i {.inline.} = Vec4i(arr: [v.x.int32, v.y.int32, v.z.int32, v.w.int32])
 proc vec4i*(v: Vec4b) : Vec4i {.inline.} = Vec4i(arr: [v.x.int32, v.y.int32, v.z.int32, v.w.int32])
 
 proc vec4l*(v: Vec4f) : Vec4l {.inline.} = Vec4l(arr: [v.x.int64, v.y.int64, v.z.int64, v.w.int64])
+proc vec4l*(v: Vec4d) : Vec4l {.inline.} = Vec4l(arr: [v.x.int64, v.y.int64, v.z.int64, v.w.int64])
 proc vec4l*(v: Vec4i) : Vec4l {.inline.} = Vec4l(arr: [v.x.int64, v.y.int64, v.z.int64, v.w.int64])
-proc vec4l*(v: Vec4l) : Vec4l {.inline.} = Vec4l(arr: [v.x.int64, v.y.int64, v.z.int64, v.w.int64])
 proc vec4l*(v: Vec4b) : Vec4l {.inline.} = Vec4l(arr: [v.x.int64, v.y.int64, v.z.int64, v.w.int64])
 
 proc vec4b*(v: Vec4f) : Vec4b {.inline.} = Vec4b(arr: [v.x.bool, v.y.bool, v.z.bool, v.w.bool])
+proc vec4b*(v: Vec4d) : Vec4b {.inline.} = Vec4b(arr: [v.x.bool, v.y.bool, v.z.bool, v.w.bool])
 proc vec4b*(v: Vec4i) : Vec4b {.inline.} = Vec4b(arr: [v.x.bool, v.y.bool, v.z.bool, v.w.bool])
 proc vec4b*(v: Vec4l) : Vec4b {.inline.} = Vec4b(arr: [v.x.bool, v.y.bool, v.z.bool, v.w.bool])
-proc vec4b*(v: Vec4b) : Vec4b {.inline.} = Vec4b(arr: [v.x.bool, v.y.bool, v.z.bool, v.w.bool])
 
 proc vec3f*(v: Vec3d) : Vec3f {.inline.} = Vec3f(arr: [v.x.float32, v.y.float32, v.z.float32])
 proc vec3f*(v: Vec3i) : Vec3f {.inline.} = Vec3f(arr: [v.x.float32, v.y.float32, v.z.float32])
@@ -594,19 +602,19 @@ proc vec3d*(v: Vec3l) : Vec3d {.inline.} = Vec3d(arr: [v.x.float64, v.y.float64,
 proc vec3d*(v: Vec3b) : Vec3d {.inline.} = Vec3d(arr: [v.x.float64, v.y.float64, v.z.float64])
 
 proc vec3i*(v: Vec3f) : Vec3i {.inline.} = Vec3i(arr: [v.x.int32, v.y.int32, v.z.int32])
-proc vec3i*(v: Vec3i) : Vec3i {.inline.} = Vec3i(arr: [v.x.int32, v.y.int32, v.z.int32])
+proc vec3i*(v: Vec3d) : Vec3i {.inline.} = Vec3i(arr: [v.x.int32, v.y.int32, v.z.int32])
 proc vec3i*(v: Vec3l) : Vec3i {.inline.} = Vec3i(arr: [v.x.int32, v.y.int32, v.z.int32])
 proc vec3i*(v: Vec3b) : Vec3i {.inline.} = Vec3i(arr: [v.x.int32, v.y.int32, v.z.int32])
 
 proc vec3l*(v: Vec3f) : Vec3l {.inline.} = Vec3l(arr: [v.x.int64, v.y.int64, v.z.int64])
+proc vec3l*(v: Vec3d) : Vec3l {.inline.} = Vec3l(arr: [v.x.int64, v.y.int64, v.z.int64])
 proc vec3l*(v: Vec3i) : Vec3l {.inline.} = Vec3l(arr: [v.x.int64, v.y.int64, v.z.int64])
-proc vec3l*(v: Vec3l) : Vec3l {.inline.} = Vec3l(arr: [v.x.int64, v.y.int64, v.z.int64])
 proc vec3l*(v: Vec3b) : Vec3l {.inline.} = Vec3l(arr: [v.x.int64, v.y.int64, v.z.int64])
 
 proc vec3b*(v: Vec3f) : Vec3b {.inline.} = Vec3b(arr: [v.x.bool, v.y.bool, v.z.bool])
+proc vec3b*(v: Vec3d) : Vec3b {.inline.} = Vec3b(arr: [v.x.bool, v.y.bool, v.z.bool])
 proc vec3b*(v: Vec3i) : Vec3b {.inline.} = Vec3b(arr: [v.x.bool, v.y.bool, v.z.bool])
 proc vec3b*(v: Vec3l) : Vec3b {.inline.} = Vec3b(arr: [v.x.bool, v.y.bool, v.z.bool])
-proc vec3b*(v: Vec3b) : Vec3b {.inline.} = Vec3b(arr: [v.x.bool, v.y.bool, v.z.bool])
 
 proc vec2f*(v: Vec2d) : Vec2f {.inline.} = Vec2f(arr: [v.x.float32, v.y.float32])
 proc vec2f*(v: Vec2i) : Vec2f {.inline.} = Vec2f(arr: [v.x.float32, v.y.float32])
@@ -619,20 +627,19 @@ proc vec2d*(v: Vec2l) : Vec2d {.inline.} = Vec2d(arr: [v.x.float64, v.y.float64]
 proc vec2d*(v: Vec2b) : Vec2d {.inline.} = Vec2d(arr: [v.x.float64, v.y.float64])
 
 proc vec2i*(v: Vec2f) : Vec2i {.inline.} = Vec2i(arr: [v.x.int32, v.y.int32])
-proc vec2i*(v: Vec2i) : Vec2i {.inline.} = Vec2i(arr: [v.x.int32, v.y.int32])
+proc vec2i*(v: Vec2d) : Vec2i {.inline.} = Vec2i(arr: [v.x.int32, v.y.int32])
 proc vec2i*(v: Vec2l) : Vec2i {.inline.} = Vec2i(arr: [v.x.int32, v.y.int32])
 proc vec2i*(v: Vec2b) : Vec2i {.inline.} = Vec2i(arr: [v.x.int32, v.y.int32])
 
 proc vec2l*(v: Vec2f) : Vec2l {.inline.} = Vec2l(arr: [v.x.int64, v.y.int64])
+proc vec2l*(v: Vec2d) : Vec2l {.inline.} = Vec2l(arr: [v.x.int64, v.y.int64])
 proc vec2l*(v: Vec2i) : Vec2l {.inline.} = Vec2l(arr: [v.x.int64, v.y.int64])
-proc vec2l*(v: Vec2l) : Vec2l {.inline.} = Vec2l(arr: [v.x.int64, v.y.int64])
 proc vec2l*(v: Vec2b) : Vec2l {.inline.} = Vec2l(arr: [v.x.int64, v.y.int64])
 
 proc vec2b*(v: Vec2f) : Vec2b {.inline.} = Vec2b(arr: [v.x.bool, v.y.bool])
+proc vec2b*(v: Vec2d) : Vec2b {.inline.} = Vec2b(arr: [v.x.bool, v.y.bool])
 proc vec2b*(v: Vec2i) : Vec2b {.inline.} = Vec2b(arr: [v.x.bool, v.y.bool])
 proc vec2b*(v: Vec2l) : Vec2b {.inline.} = Vec2b(arr: [v.x.bool, v.y.bool])
-proc vec2b*(v: Vec2b) : Vec2b {.inline.} = Vec2b(arr: [v.x.bool, v.y.bool])
-
   
 # bool operations
 
