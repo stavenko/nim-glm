@@ -1,8 +1,8 @@
 import vec
 
 type
-  Mat[M,N: static[int]; T] = object
-    arr: array[M, Vec[N,T]]
+  Mat*[M,N: static[int]; T] = object
+    arr*: array[M, Vec[N,T]]
 
 proc `$`*(m: Mat): string =
   var cols: array[m.M, array[m.N, string]]
@@ -98,9 +98,42 @@ proc mat4*[T](a,b,c,d: Vec4[T]) : Mat4[T] =
 proc mat3*[T](a,b,c: Vec3[T]) : Mat3[T] =
   result.arr = [a,b,c]
 
-proc mat2*[T](a,b,c,d: Vec2[T]) : Mat2[T] =
+proc mat2*[T](a,b: Vec2[T]) : Mat2[T] =
   result.arr = [a,b]
 
+
+proc mat4x4*[T](a,b,c,d: Vec4[T]) : Mat4x4[T] =
+  result.arr = [a,b,c,d]
+  
+proc mat4x3*[T](a,b,c,d: Vec3[T]) : Mat4x3[T] =
+  result.arr = [a,b,c,d]
+
+proc mat4x2*[T](a,b,c,d: Vec2[T]) : Mat4x2[T] =
+  result.arr = [a,b,c,d]
+
+
+proc mat3x4*[T](a,b,c: Vec4[T]) : Mat3x4[T] =
+  result.arr = [a,b,c]
+  
+proc mat3x3*[T](a,b,c: Vec3[T]) : Mat3x3[T] =
+  result.arr = [a,b,c]
+
+proc mat3x2*[T](a,b,c: Vec2[T]) : Mat3x2[T] =
+  result.arr = [a,b,c]
+
+
+proc mat2x4*[T](a,b: Vec4[T]) : Mat2x4[T] =
+  result.arr = [a,b]
+  
+proc mat2x3*[T](a,b: Vec3[T]) : Mat2x3[T] =
+  result.arr = [a,b]
+
+proc mat2x2*[T](a,b: Vec2[T]) : Mat2x2[T] =
+  result.arr = [a,b]
+
+
+
+  
 proc mat4*[T](v: Vec4[T]): Mat4[T] =
   for i in 0 .. 3:
     result.arr[i].arr[i] = v.arr[i]
@@ -112,6 +145,7 @@ proc mat3*[T](v: Vec3[T]): Mat3[T] =
 proc mat2*[T](v: Vec2[T]): Mat2[T] =
   for i in 0 .. 1:
     result.arr[i].arr[i] = v.arr[i]
+
   
 proc mat4*[T](s: T): Mat4[T] =
   for i in 0 .. 3:
@@ -342,9 +376,12 @@ proc `*`*[M,N,T](v: Vec[N,T]; m: Mat[M,N,T]): Vec[M, T] =
   for i in 0 ..< M:
     result.arr[i] = dot(v, m.arr[i])
 
-proc `*`*[M,N,O,T](m1: Mat[M,N,T]; m2: Mat[O,M,T]): Mat[N,O,T] =
-  for i in 0 ..< N:
-    result.arr[i] = m1.getRow(i) * m2
+import arnelib
+  
+proc `*`*[M,N,O,T](m1: Mat[M,N,T]; m2: Mat[O,M,T]): Mat[O,N,T] =
+  echo s"${N}x${M} * ${M}x${O} = ${N}x${O}"
+  for i in 0 ..< O:
+    result.arr[i] = m1 * m2.arr[i]
 
 proc `*`*[M,N,T](m: Mat[M,N,T]; s: T): Mat[M,N,T] =
   for i in 0 ..< M:

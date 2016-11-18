@@ -152,6 +152,8 @@ proc poseMatrix*[T](translate: Vec3[T]; rotate: Quat[T]; scale: Vec3[T]): Mat4[T
   result[2] = vec4(scalerot_mat[2], 0)
   result[3] = vec4(translate,    1)
 
+  
+#[
 proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
   result[0][0] =       (2*near)/(right-left)
   result[1][1] =       (2*near)/(top-bottom)
@@ -160,4 +162,4 @@ proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
   result[2][1] =   (top+bottom)/(top-bottom)
   result[2][3] = -1
   result[3][2] =   (2*far*near)/(near-far)
-
+]#
