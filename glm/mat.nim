@@ -254,7 +254,7 @@ proc mat3l*(a,b,c: Vec3l) : Mat3l =
 
 proc mat2l*(a,b: Vec2l) : Mat2l =
   result.arr = [a,b]
-
+  
 #proc `==`(m1,m2: Mat): Mat = 
   
 #diagonalConstructors(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
@@ -409,9 +409,18 @@ proc `*=`*[M,N,T](m: var Mat[M,N,T]; s: T): void =
     m.arr[i] *= s
 
 proc `*=`*[N,T](m1: var Mat[N,N,T]; m2: Mat[N,N,T]): void =
-  for i in 0 ..< N:
-    m1.arr
+  var tmp = m1 * m2;
+  m1 = tmp
 
+proc matrixCompMult*[M,N,T](m1, m2: Mat[M,N,T]): Mat[M,N,T] =
+  for i in 0 ..< M:
+    result.arr[i] = m1.arr[i] * m2.arr[i]
+
+proc `.*`*[M,N,T](m1, m2: Mat[M,N,T]): Mat[M,N,T] =
+  for i in 0 ..< M:
+    result.arr[i] = m1.arr[i] * m2.arr[i]
+
+  
 # conversions
 
 proc mat4f*(mat: Mat4d): Mat4f {.inline.} = Mat4f(arr: [mat.arr[0].vec4f, mat.arr[1].vec4f, mat.arr[2].vec4f, mat.arr[3].vec4f])
