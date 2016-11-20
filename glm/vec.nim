@@ -2,6 +2,8 @@
 #import sequtils
 import macros, math
 
+export math.Pi
+
 # this is a dirty hack to have integer division behave like in C/C++/glsl etc.
 # don't export functions, maybe disable
 template `/`(a,b: int32): int32 = a div b
@@ -326,7 +328,7 @@ foreachImpl(sqrt)
 # common functions #
 ####################
 
-export math.ceil, math.floor
+export math.ceil, math.floor, math.round
 
 proc abs*[N,T](v : Vec[N,T]) : Vec[N,T] =
   for i in 0 ..< N:
@@ -335,6 +337,10 @@ proc abs*[N,T](v : Vec[N,T]) : Vec[N,T] =
 proc ceil*[N,T](v: Vec[N,T]): Vec[N,T] =
   for i in 0 ..< N:
     result.arr[i] = ceil(v.arr[i])
+
+proc round*[N,T](v: Vec[N,T]): Vec[N,T] =
+  for i in 0 ..< N:
+    result.arr[i] = round(v.arr[i])
   
 proc clamp*[N,T](arg, minVal, maxVal: Vec[N,T]): Vec[N,T] =
   for i in 0 ..< N:
