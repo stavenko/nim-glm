@@ -396,14 +396,6 @@ proc `*`*[M,N,T](s: T; m: Mat[M,N,T]): Mat[M,N,T] =
   for i in 0 ..< M:
     result.arr[i] = s * m.arr[i]
 
-proc `+`*[M,N,T](m1,m2: Mat[M,N,T]): Mat[M,N,T] =
-  for i in 0 ..< M:
-    result.arr[i] = m1.arr[i] + m2.arr[i]
-
-proc `-`*[M,N,T](m1,m2: Mat[M,N,T]): Mat[M,N,T] =
-  for i in 0 ..< M:
-    result.arr[i] = m1.arr[i] - m2.arr[i]
-
 proc `*=`*[M,N,T](m: var Mat[M,N,T]; s: T): void =
   for i in 0 ..< M:
     m.arr[i] *= s
@@ -412,24 +404,26 @@ proc `*=`*[N,T](m1: var Mat[N,N,T]; m2: Mat[N,N,T]): void =
   var tmp = m1 * m2;
   m1 = tmp
 
-proc matrixCompMult*[M,N,T](m1, m2: Mat[M,N,T]): Mat[M,N,T] =
-  for i in 0 ..< M:
-    result.arr[i] = m1.arr[i] * m2.arr[i]
+template foreachZipImpl(name,op: untyped): untyped =
+  proc name*[M,N,T](m1,m2: Mat[M,N,T]): Mat[M,N,T] =
+    for i in 0 ..< M:
+      result.arr[i] = op(m1.arr[i], m2.arr[i])
 
-proc `.*`*[M,N,T](m1, m2: Mat[M,N,T]): Mat[M,N,T] =
-  for i in 0 ..< M:
-    result.arr[i] = m1.arr[i] * m2.arr[i]
+foreachZipImpl(`+`,`+`)
+foreachZipImpl(`-`,`-`)
+foreachZipImpl(`.+`,`+`)
+foreachZipImpl(`.-`,`-`)
+foreachZipImpl(`.*`,`*`)
+foreachZipImpl(`./`,`/`)
+foreachZipImpl(matrixCompMult,`*`)
 
-  
 # conversions
 
 proc mat4f*(mat: Mat4d): Mat4f {.inline.} = Mat4f(arr: [mat.arr[0].vec4f, mat.arr[1].vec4f, mat.arr[2].vec4f, mat.arr[3].vec4f])
 proc mat4d*(mat: Mat4f): Mat4d {.inline.} = Mat4d(arr: [mat.arr[0].vec4d, mat.arr[1].vec4d, mat.arr[2].vec4d, mat.arr[3].vec4d])
 
-
 template numCols*[N,M,T](t : typedesc[Mat[N,M,T]]): int = N
 template numRows*[N,M,T](t : typedesc[Mat[N,M,T]]): int = M
-
     
 if isMainModule:
 
