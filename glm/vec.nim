@@ -296,6 +296,12 @@ foreachImpl(arcsin)
 foreachImpl(arccos)
 foreachImpl(arctan)
 
+export math.sinh, math.cosh, math.tanh
+
+foreachImpl(sinh)
+foreachImpl(cosh)
+foreachImpl(tanh)
+
 proc radians*(v : SomeReal): SomeReal {.inline.} =
   v * math.Pi / 180
 
