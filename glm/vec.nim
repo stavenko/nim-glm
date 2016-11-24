@@ -132,6 +132,13 @@ mathInpl(`-=`)
 mathInpl(`*=`)
 mathInpl(`/=`)
 
+# unary operators
+proc `-`*[N,T](v: Vec[N,T]): Vec[N,T] =
+  for i in 0 ..< N:
+    result.arr[i] = -v.arr[i]
+
+proc `+`*[N,T](v: Vec[N,T]): Vec[N,T] = v
+  
 proc `[]=`*[N,T](v:var Vec[N,T]; ix:int; c:T): void {.inline.} =
     v.arr[ix] = c
 proc `[]`*[N,T](v: Vec[N,T]; ix: int): T {.inline.} =
@@ -266,10 +273,7 @@ proc caddr*[N,T](v:var Vec[N,T]): ptr T {.inline.}=
   ## Address getter to pass vector to native-C openGL functions as pointers
   v.arr[0].addr
 
-
-type
-  genType = float32 | float64 | Vec2f | Vec2d | Vec3f | Vec3d | Vec4f | Vec4d
-  
+ 
 ####################################
 # Angle and Trigonometry Functions #
 ####################################
