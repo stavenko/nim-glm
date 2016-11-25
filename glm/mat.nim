@@ -382,7 +382,6 @@ proc `*`*[M,N,T](v: Vec[N,T]; m: Mat[M,N,T]): Vec[M, T] =
   for i in 0 ..< M:
     result.arr[i] = dot(v, m.arr[i])
 
-import arnelib
   
 proc `*`*[M,N,O,T](m1: Mat[M,N,T]; m2: Mat[O,M,T]): Mat[O,N,T] =
   for i in 0 ..< O:
