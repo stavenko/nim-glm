@@ -109,6 +109,16 @@ proc lookAtLH*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
     result[3,1] = -dot(u, eye)
     result[3,2] = -dot(f, eye)
 
+proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
+  result[0][0] =       (2*near)/(right-left)
+  result[1][1] =       (2*near)/(top-bottom)
+  result[2][2] =     (far+near)/(near-far)
+  result[2][0] =   (right+left)/(right-left)
+  result[2][1] =   (top+bottom)/(top-bottom)
+  result[2][3] = -1
+  result[3][2] =   (2*far*near)/(near-far)
+
+
 when GLM_LEFT_HAND:
     proc perspective*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
         perspectiveLH(fovy, aspect, zNear, zFar)
