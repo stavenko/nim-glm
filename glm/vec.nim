@@ -395,6 +395,9 @@ proc min*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
   for i in 0 ..< N:
     result.arr[i] = min(val, v.arr[i])
 
+proc mix*[T](x,y,a: T): T =
+  x * (1 - a) + y * a
+  
 proc mix*[N,T](v1,v2: Vec[N,T]; a: T): Vec[N,T] =
   v1 * (1 - a) + v2 * a
 
