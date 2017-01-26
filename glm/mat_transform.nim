@@ -125,7 +125,7 @@ proc frustum*(left, right, bottom, top, near, far: SomeReal): Mat4[SomeReal] =
   result[2][3] = -1
   result[3][2] =   (2*far*near)/(near-far)
         
-if isMainModule:
+when isMainModule:
     var m = mat4d()
     var nm = translate(m, vec3(5.0, 5.0, 5.0))
     var rm = rotate(m, vec3(0.0, 1.0, 0.0), radians(45.0) )

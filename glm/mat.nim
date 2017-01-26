@@ -439,7 +439,7 @@ proc mat4d*(mat: Mat4f): Mat4d {.inline.} = Mat4d(arr: [mat.arr[0].vec4d, mat.ar
 template numCols*[N,M,T](t : typedesc[Mat[N,M,T]]): int = N
 template numRows*[N,M,T](t : typedesc[Mat[N,M,T]]): int = M
     
-if isMainModule:
+when isMainModule:
 
   var mats : array[2, Mat4f]  
 
