@@ -174,7 +174,9 @@ proc mat4*[T](q: Quat[T]; v: Vec4[T]): Mat4[T] =
   result[3] = v
   
 proc mat4*[T](q: Quat[T]; v: Vec3[T]): Mat4[T] = mat4(q, vec4(v,1))
-  
+
+proc mat4*[T](q: Quat[T]): Mat4[T] = mat4(q, vec4[T](0,0,0,1))
+
 proc poseMatrix*[T](translate: Vec3[T]; rotate: Quat[T]; scale: Vec3[T]): Mat4[T] =
   let
     factor1 = rotate.normalize.mat3
