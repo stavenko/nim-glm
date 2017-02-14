@@ -120,12 +120,12 @@ mathPerComponent(`div`)
 
 template mathInpl(opName): untyped =
   proc opName*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
-    for i in 0 ..< N:
-      opName(v.arr[i], u.arr[i])
+    for ii in 0 ..< N:
+      opName(v.arr[ii], u.arr[ii])
 
   proc opName*[N,T](v: var Vec[N,T]; x: T): void =
-    for i in 0 ..< N:
-      opName(v.arr[i], x)
+    for ii in 0 ..< N:
+      opName(v.arr[ii], x)
   
 mathInpl(`+=`)
 mathInpl(`-=`)
