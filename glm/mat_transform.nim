@@ -1,7 +1,6 @@
 import globals
 import mat
 import vec
-import math
 
 proc translate*[T](m:Mat4[T]; v:Vec3[T]): Mat4x4[T] =
   result = m
@@ -76,15 +75,10 @@ proc lookAtRH*[T](eye,center,up:Vec3[T]): Mat4x4[T] =
         s = normalize(cross(f, up))
         u = cross(s,f)
     result = mat4[T](1.0)
-    result[0,0] = s.x
-    result[1,0] = s.y
-    result[2,0] = s.z
-    result[0,1] = u.x
-    result[1,1] = u.y
-    result[2,1] = u.z
-    result[0,2] = -f.x
-    result[1,2] = -f.y
-    result[2,2] = -f.z
+    result.row0 = vec4( s,0)
+    result.row1 = vec4( u,0)
+    result.row2 = vec4(-f,0)
+    result.arr[3] = vec4(-dot(s,eye), -dot(u,eye), dot(f,eye), 1)
     result[3,0] = -dot(s, eye)
     result[3,1] = -dot(u, eye)
     result[3,2] = dot(f, eye)
@@ -96,18 +90,20 @@ proc lookAtLH*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
         u = cross(s,f)
     result = mat4[T](1.0)
 
-    result[0,0] = s.x
-    result[1,0] = s.y
-    result[2,0] = s.z
-    result[0,1] = u.x
-    result[1,1] = u.y
-    result[2,1] = u.z
-    result[0,2] = f.x
-    result[1,2] = f.y
-    result[2,2] = f.z
-    result[3,0] = -dot(s, eye)
-    result[3,1] = -dot(u, eye)
-    result[3,2] = -dot(f, eye)
+    result.row0 = vec4(s, 0)
+    result.row1 = vec4(u, 0)
+    result.row2 = vec4(f, 0)
+    result.arr[3] = vec4(-dot(s, eye),-dot(u, eye),-dot(f, eye), 1)
+
+proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
+  result[0][0] =       (2*near)/(right-left)
+  result[1][1] =       (2*near)/(top-bottom)
+  result[2][2] =     (far+near)/(near-far)
+  result[2][0] =   (right+left)/(right-left)
+  result[2][1] =   (top+bottom)/(top-bottom)
+  result[2][3] = -1
+  result[3][2] =   (2*far*near)/(near-far)
+
 
 when GLM_LEFT_HAND:
     proc perspective*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
@@ -120,10 +116,19 @@ else:
     proc lookAt*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
         lookAtRH(eye, center, up)
 
-if isMainModule:
+proc frustum*(left, right, bottom, top, near, far: SomeReal): Mat4[SomeReal] =
+  result[0][0] =       (2*near)/(right-left)
+  result[1][1] =       (2*near)/(top-bottom)
+  result[2][2] =     (far+near)/(near-far)
+  result[2][0] =   (right+left)/(right-left)
+  result[2][1] =   (top+bottom)/(top-bottom)
+  result[2][3] = -1
+  result[3][2] =   (2*far*near)/(near-far)
+        
+when isMainModule:
     var m = mat4d()
     var nm = translate(m, vec3(5.0, 5.0, 5.0))
-    var rm = rotate(m, vec3(0.0, 1.0, 0.0), math.PI/4)
+    var rm = rotate(m, vec3(0.0, 1.0, 0.0), radians(45.0) )
     var sm = scale(m, vec3(1.5, 5.0, 8.0))
     var v = vec4(1.0,0.0,0.0,1.0)
     var o = ortho(-5.0, 5, -5,5, 0.01, 100)

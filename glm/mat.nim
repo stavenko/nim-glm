@@ -366,13 +366,29 @@ proc inverse*[T](m: Mat4[T]):Mat4[T]=
 
 #fromArray(MIN_MATRIX_SIZE, MAX_MATRIX_SIZE)
 
-proc getRow*[M,N,T](m: Mat[M,N,T]; i: int): Vec[M,T] =
+proc row*[M,N,T](m: Mat[M,N,T]; i: int): Vec[M,T] =
   for j in 0 ..< M:
     result.arr[j] = m.arr[j].arr[i]
+
+proc `row0=`*[M,N,T](m: var Mat[M,N,T]; value: Vec[M,T]): void =
+  for j in 0 ..< M:
+    m.arr[j].arr[0] = value.arr[j]
+
+proc `row1=`*[M,N,T](m: var Mat[M,N,T]; value: Vec[M,T]): void =
+  for j in 0 ..< M:
+    m.arr[j].arr[1] = value.arr[j]
+
+proc `row2=`*[M,N,T](m: var Mat[M,N,T]; value: Vec[M,T]): void =
+  for j in 0 ..< M:
+    m.arr[j].arr[2] = value.arr[j]
+
+proc `row3=`*[M,N,T](m: var Mat[M,N,T]; value: Vec[M,T]): void =
+  for j in 0 ..< M:
+    m.arr[j].arr[3] = value.arr[j]
   
 proc transpose*[M,N,T](m: Mat[M,N,T]): Mat[N,M,T] =
   for i in 0 ..< N:
-    result.arr[i] = m.getRow(i)
+    result.arr[i] = m.row(i)
   
 proc `*`*[M,N,T](m: Mat[M,N,T]; v: Vec[M, T]): Vec[N, T] =
   for i in 0 ..< M:
@@ -381,8 +397,6 @@ proc `*`*[M,N,T](m: Mat[M,N,T]; v: Vec[M, T]): Vec[N, T] =
 proc `*`*[M,N,T](v: Vec[N,T]; m: Mat[M,N,T]): Vec[M, T] =
   for i in 0 ..< M:
     result.arr[i] = dot(v, m.arr[i])
-
-import arnelib
   
 proc `*`*[M,N,O,T](m1: Mat[M,N,T]; m2: Mat[O,M,T]): Mat[O,N,T] =
   for i in 0 ..< O:
@@ -425,7 +439,7 @@ proc mat4d*(mat: Mat4f): Mat4d {.inline.} = Mat4d(arr: [mat.arr[0].vec4d, mat.ar
 template numCols*[N,M,T](t : typedesc[Mat[N,M,T]]): int = N
 template numRows*[N,M,T](t : typedesc[Mat[N,M,T]]): int = M
     
-if isMainModule:
+when isMainModule:
 
   var mats : array[2, Mat4f]  
 

@@ -101,16 +101,16 @@ template mathPerComponent(op: untyped): untyped =
   # TODO this is a good place for simd optimization
   
   proc op*[N,T](v,u: Vec[N,T]): Vec[N,T] {.inline.} =
-    for i in 0 ..< N:
-      result.arr[i] = op(v.arr[i], u.arr[i])
+    for ii in 0 ..< N:
+      result.arr[ii] = op(v.arr[ii], u.arr[ii])
 
   proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] {.inline.} =
-    for i in 0 ..< N:
-      result.arr[i] = op(v.arr[i], val)
+    for ii in 0 ..< N:
+      result.arr[ii] = op(v.arr[ii], val)
 
   proc op*[N,T](val: T; v: Vec[N,T]): Vec[N,T] {.inline.} =
-    for i in 0 ..< N:
-      result.arr[i] = op(val, v.arr[i])
+    for ii in 0 ..< N:
+      result.arr[ii] = op(val, v.arr[ii])
     
 mathPerComponent(`+`)
 mathPerComponent(`-`)
@@ -120,12 +120,12 @@ mathPerComponent(`div`)
 
 template mathInpl(opName): untyped =
   proc opName*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
-    for i in 0 ..< N:
-      opName(v.arr[i], u.arr[i])
+    for ii in 0 ..< N:
+      opName(v.arr[ii], u.arr[ii])
 
   proc opName*[N,T](v: var Vec[N,T]; x: T): void =
-    for i in 0 ..< N:
-      opName(v.arr[i], x)
+    for ii in 0 ..< N:
+      opName(v.arr[ii], x)
   
 mathInpl(`+=`)
 mathInpl(`-=`)
@@ -395,6 +395,9 @@ proc min*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
   for i in 0 ..< N:
     result.arr[i] = min(val, v.arr[i])
 
+proc mix*[T](x,y,a: T): T =
+  x * (1 - a) + y * a
+  
 proc mix*[N,T](v1,v2: Vec[N,T]; a: T): Vec[N,T] =
   v1 * (1 - a) + v2 * a
 
@@ -692,7 +695,7 @@ comparisonOpPerComponent(`.>=`,`>=`)
 comparisonOpPerComponent(`.>`, `>` )
 comparisonOpPerComponent(`.!=`,`!=`)
 
-if isMainModule:
+when isMainModule:
   var v0 = vec3(1.0, 0.5, 0)
   var u0 = vec3(1.0, 1.0, 0)
   var c = cross(v0,u0)

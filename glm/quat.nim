@@ -30,9 +30,14 @@ iterator pairs*[T](q: Quat[T]): tuple[key: int, val: T] =
 iterator mpairs*[T](q: var Quat[T]): tuple[key: int, val: var T] =
   for i, x in q.arr.mpairs:
     yield (i,x)
-    
-    
-proc `$`*[T](q : Quat[T]) : string = q.arr.mkString("quatf(", ", ", ")")
+
+proc `$`*[T](q : Quat[T]) : string =
+  result = "quatf("
+  for i, val in q.arr:
+    if i != 0:
+      result &= ", "
+    result &= $val
+  result &= ")"
 
 proc x*[T](q : Quat[T]) : T = q.arr[0]
 proc y*[T](q : Quat[T]) : T = q.arr[1]
@@ -72,19 +77,29 @@ proc quat*[T](mat: Mat3[T]): Quat[T] =
   result.y = (mat[2][0] - mat[0][2]) / (4 * qw)
   result.z = (mat[0][1] - mat[1][0]) / (4 * qw)
   result.w = qw
-  
-# untestet
-proc `*`*[T](q1,q2 : Quat[T]) : Quat[T] = 
-  result.arr[0] = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y
-  result.arr[1] = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x
-  result.arr[2] = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w
-  result.arr[3] = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z
 
+proc quat*[T](mat: Mat4[T]): Quat[T] =
+  ## mat needs to be rotation matrix (orthogonal, det(mat) = 1
+  let qw = sqrt(1 + mat[0][0] + mat[1][1] + mat[2][2]) * 0.5'f32
+  result.x = (mat[1][2] - mat[2][1]) / (4 * qw)
+  result.y = (mat[2][0] - mat[0][2]) / (4 * qw)
+  result.z = (mat[0][1] - mat[1][0]) / (4 * qw)
+  result.w = qw
+  
+proc `*`*[T](p,q: Quat[T]): Quat[T] =
+  result.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z
+  result.x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y
+  result.y = p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z
+  result.z = p.w * q.z + p.z * q.w + p.x * q.y - p.y * q.x
 
 proc `*`*[T](q : Quat[T], s : T) : Quat[T] =
   for i in 0 .. 3:
     result[i] = q[i] * s
 
+proc `/`*[T](q : Quat[T]; s: T): Quat[T] =
+  for i in 0 .. 3:
+    result[i] = q[i] / s
+    
 proc `+`*[T](q1,q2 : Quat[T]) : Quat[T] =
   for i in 0 .. 3:
     result[i] = q1[i] + q2[i]
@@ -112,9 +127,29 @@ proc length*[T](q : Quat[T]) : T =
 proc normalize*[T](q : Quat[T]) : Quat[T] =
   q * (1.0f / q.length)
 
-proc mix*[S,T](a,b: S; alpha: T) : S =
-  a * (1 - alpha) + b * alpha
+proc fastMix*[S,T](a,b: S; alpha: T) : S =
+  ## Returns a normalized linear interpolated quaternion of x and y according a.
+  normalize(a * (1 - alpha) + b * alpha)
 
+proc conjugate[T](q: Quat[T]): Quat[T] =
+  result.arr[0] = -q[0]
+  result.arr[1] = -q[1]
+  result.arr[2] = -q[2]
+  result.arr[3] =  q[3]
+
+proc dot[T](a, b: Quat[T]): T {.inline.} =
+  a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
+  
+proc inverse*[T](q: Quat[T]) : Quat[T] =
+  return conjugate(q) / dot(q, q);
+
+#proc rotate[T](q: Quat[T]):
+proc rotate*[T](q: Quat[T]; angle: T; v: Vec3[T]) : Quat[T] =
+  ## rotates q around the axis v by the given angle in radians
+  result.xyz = normalize(v) * sin(angle * 0.5)
+  result.w = cos(angle * 0.5)
+  result = q * result
+  
 proc mat3*[T](q : Quat[T]) : Mat3[T] =
   let
     txx = 2*q.x*q.x
@@ -139,7 +174,9 @@ proc mat4*[T](q: Quat[T]; v: Vec4[T]): Mat4[T] =
   result[3] = v
   
 proc mat4*[T](q: Quat[T]; v: Vec3[T]): Mat4[T] = mat4(q, vec4(v,1))
-  
+
+proc mat4*[T](q: Quat[T]): Mat4[T] = mat4(q, vec4[T](0,0,0,1))
+
 proc poseMatrix*[T](translate: Vec3[T]; rotate: Quat[T]; scale: Vec3[T]): Mat4[T] =
   let
     factor1 = rotate.normalize.mat3
@@ -176,3 +213,11 @@ proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
   result[2][3] = -1
   result[3][2] =   (2*far*near)/(near-far)
 ]#
+
+
+when isMainModule:
+  let q1 = quatf(1,2,3,4)
+  let q2 = inverse(q1)
+
+  echo q1 * q2
+  echo q2 * q1
