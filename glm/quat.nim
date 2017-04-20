@@ -71,21 +71,41 @@ proc quat*[T](axis: Vec3[T]; angle: T): Quat[T] =
   result.w = cos(angle / 2)
 
 proc quat*[T](mat: Mat3[T]): Quat[T] =
-  ## mat needs to be rotation matrix (orthogonal, det(mat) = 1
-  let qw = sqrt(1 + mat[0][0] + mat[1][1] + mat[2][2]) * 0.5'f32
-  result.x = (mat[1][2] - mat[2][1]) / (4 * qw)
-  result.y = (mat[2][0] - mat[0][2]) / (4 * qw)
-  result.z = (mat[0][1] - mat[1][0]) / (4 * qw)
-  result.w = qw
+  ## mat needs to be rotation matrix (orthogonal, det(mat) = 1)
+  let tr = mat[0,0] + mat[1,1] + mat[2,2]
+  if tr > 0:
+    ##  S=4*qw
+    var S: cfloat = sqrt(tr + 1.0) * 2
+    result.w = 0.25 * S
+    result.x = (mat[2,1] - mat[1,2]) / S
+    result.y = (mat[0,2] - mat[2,0]) / S
+    result.z = (mat[1,0] - mat[0,1]) / S
+  elif (mat[0,0] > mat[1,1]) and (mat[0,0] > mat[2,2]):
+    ##  S=4*qx
+    var S: cfloat = sqrt(1.0 + mat[0,0] - mat[1,1] - mat[2,2]) * 2
+    result.w = (mat[2,1] - mat[1,2]) / S
+    result.x = 0.25 * S
+    result.y = (mat[0,1] + mat[1,0]) / S
+    result.z = (mat[0,2] + mat[2,0]) / S
+  elif mat[1,1] > mat[2,2]:
+    ##  S=4*qy
+    var S: cfloat = sqrt(1.0 + mat[1,1] - mat[0,0] - mat[2,2]) * 2
+    result.w = (mat[0,2] - mat[2,0]) / S
+    result.x = (mat[0,1] + mat[1,0]) / S
+    result.y = 0.25 * S
+    result.z = (mat[1,2] + mat[2,1]) / S
+  else:
+    ##  S=4*qz
+    var S: cfloat = sqrt(1.0 + mat[2,2] - mat[0,0] - mat[1,1]) * 2
+    result.w = (mat[1,0] - mat[0,1]) / S
+    result.x = (mat[0,2] + mat[2,0]) / S
+    result.y = (mat[1,2] + mat[2,1]) / S
+    result.z = 0.25 * S
 
 proc quat*[T](mat: Mat4[T]): Quat[T] =
   ## mat needs to be rotation matrix (orthogonal, det(mat) = 1
-  let qw = sqrt(1 + mat[0][0] + mat[1][1] + mat[2][2]) * 0.5'f32
-  result.x = (mat[1][2] - mat[2][1]) / (4 * qw)
-  result.y = (mat[2][0] - mat[0][2]) / (4 * qw)
-  result.z = (mat[0][1] - mat[1][0]) / (4 * qw)
-  result.w = qw
-  
+  quat(mat3(mat[0].xyz, mat[1].xyz, mat[2].xyz))
+
 proc `*`*[T](p,q: Quat[T]): Quat[T] =
   result.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z
   result.x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y
