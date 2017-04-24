@@ -772,7 +772,7 @@ proc vec2b*(v: Vec2l)  : Vec2b {.inline.} = Vec2b(arr: [v.x.bool, v.y.bool])
 
 proc all*[N](v: Vec[N,bool]): bool =
   for b in v.arr:
-    if b: return false
+    if not b: return false
   return true
 
 proc any*[N](v: Vec[N,bool]): bool =

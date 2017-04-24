@@ -61,6 +61,10 @@ proc `w=`*[T](q : var Quat[T]; v: T) : void =
   q[3] = v
 
 proc quat*[T](x,y,z,w : T) : Quat[T] {.inline.} =
+  ## warning unlike original glm, this constructor does have ``w`` as
+  ## the last argument.  The reason I did this, was because I had a
+  ## bug with original glm that took me hours to fix just because glm
+  ## uses ``wxyz`` as argument order, but ``xyzw`` internally.
   result.arr = [x,y,z,w]
 
 proc quat*[T](axis: Vec3[T]; angle: T): Quat[T] =
@@ -177,12 +181,12 @@ proc normalize*[T](q : Quat[T]) : Quat[T] =
 proc angle*[T](x: Quat[T]): T =
   return arccos(x.w) * T(2)
 
-proc axis*[T]: Vec3[T] =
+proc axis*[T](x: Quat[T]): Vec3[T] =
   let tmp1: T = T(1) - x.w * x.w;
-  if tmp1 <= 0:
+  if tmp1 <= T(0):
     return vec3(T(0), T(0), T(1))
   let tmp2: T = T(1) / sqrt(tmp1)
-  return vec3(x.x * tmp2, x.y * tmp2, x.z * tmp2)
+  vec3(x.x * tmp2, x.y * tmp2, x.z * tmp2)
 
 proc roll*[T](q: Quat[T]): T =
   T(arctan2(T(2) * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z))
@@ -232,7 +236,7 @@ proc slerp*[T](x,y: Quat[T]; a: T): Quat[T] =
   var z = y
   var cosTheta: T = dot(x, y)
 
-  if cosTheta < 0:
+  if cosTheta < T(0):
     z = -y
     cosTheta = -cosTheta
 
@@ -240,14 +244,14 @@ proc slerp*[T](x,y: Quat[T]; a: T): Quat[T] =
   if cosTheta > T(1) - T(epsilon):
     # Linear interpolation
     return quat(
-      mix(x.x, y.x, a),
-      mix(x.y, y.y, a),
-      mix(x.z, y.z, a),
-      mix(x.w, y.w, a))
+      mix(x.x, z.x, a),
+      mix(x.y, z.y, a),
+      mix(x.z, z.z, a),
+      mix(x.w, z.w, a))
   else:
     # Essential Mathematics, page 467
     let angle: T = arccos(cosTheta);
-    return (sin((T(1) - a) * angle) * x + sin(a * angle) * y) / sin(angle)
+    return (sin((T(1) - a) * angle) * x + sin(a * angle) * z) / sin(angle)
 
 proc conjugate[T](q: Quat[T]): Quat[T] =
   result.arr[0] = -q[0]
@@ -308,7 +312,7 @@ proc poseMatrix*[T](translate: Vec3[T]; rotate: Quat[T]; scale: Vec3[T]): Mat4[T
 proc quat*[T](u,v: Vec3[T]): Quat[T] =
   let LocalW: Vec3[T] = cross(u,v)
   let Dot: T = dot(u,v)
-  let q = quat(LocalW.x, LocalW.y, LocalW.z, T(1))
+  let q = quat(LocalW.x, LocalW.y, LocalW.z, T(1) + Dot)
   normalize(q)
 
 type
