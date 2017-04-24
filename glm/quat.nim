@@ -106,6 +106,7 @@ proc quat*[T](mat: Mat4[T]): Quat[T] =
   ## mat needs to be rotation matrix (orthogonal, det(mat) = 1
   quat(mat3(mat[0].xyz, mat[1].xyz, mat[2].xyz))
 
+
 proc `*`*[T](p,q: Quat[T]): Quat[T] =
   result.w = p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z
   result.x = p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y
@@ -115,6 +116,28 @@ proc `*`*[T](p,q: Quat[T]): Quat[T] =
 proc `*`*[T](q : Quat[T], s : T) : Quat[T] =
   for i in 0 .. 3:
     result[i] = q[i] * s
+
+proc `*`*[T](s:T, q : Quat[T]) : Quat[T] =
+  for i in 0 .. 3:
+    result[i] = q[i] * s
+
+
+proc `*`*[T](q: Quat[T], v: Vec3[T]): Vec3[T] =
+  let QuatVector = vec3(q.x, q.y, q.z)
+  let uv = cross(QuatVector, v)
+  let uuv = cross(QuatVector, uv)
+
+  return v + ((uv * q.w) + uuv) * T(2)
+
+proc `*`*[T](v: Vec3[T]; q: Quat[T]): Vec3[T] =
+  return inverse(q) * v
+
+proc `*`*[T](q: Quat[T], v: Vec4[T]): Vec4[T] =
+  vec4(q * v.xyz, v.w);
+
+proc `*`*[T](v: Vec4[T]; q: Quat[T]): Vec4[T] =
+  inverse(q) * v
+
 
 proc `/`*[T](q : Quat[T]; s: T): Quat[T] =
   for i in 0 .. 3:
@@ -126,7 +149,11 @@ proc `+`*[T](q1,q2 : Quat[T]) : Quat[T] =
 
 proc `-`*[T](q1,q2 : Quat[T]) : Quat[T] =
   for i in 0 .. 3:
-    result[i] = q1[i] - q2[1]
+    result[i] = q1[i] - q2[i]
+
+proc `-`*[T](q : Quat[T]) : Quat[T] =
+  for i in 0 .. 3:
+    result[i] = -q[i]
 
 proc `*=`*[T](q1: var Quat[T]; q2: Quat[T]): void =
   q1 = q1 * q2
@@ -147,9 +174,80 @@ proc length*[T](q : Quat[T]) : T =
 proc normalize*[T](q : Quat[T]) : Quat[T] =
   q * (1.0f / q.length)
 
-proc fastMix*[S,T](a,b: S; alpha: T) : S =
+proc angle*[T](x: Quat[T]): T =
+  return arccos(x.w) * T(2)
+
+proc axis*[T]: Vec3[T] =
+  let tmp1: T = T(1) - x.w * x.w;
+  if tmp1 <= 0:
+    return vec3(T(0), T(0), T(1))
+  let tmp2: T = T(1) / sqrt(tmp1)
+  return vec3(x.x * tmp2, x.y * tmp2, x.z * tmp2)
+
+proc roll*[T](q: Quat[T]): T =
+  T(arctan2(T(2) * (q.x * q.y + q.w * q.z), q.w * q.w + q.x * q.x - q.y * q.y - q.z * q.z))
+
+proc pitch*[T](q: Quat[T]): T =
+  let y: T = T(2) * (q.y * q.z + q.w * q.x);
+  let x: T = q.w * q.w - q.x * q.x - q.y * q.y + q.z * q.z;
+  if y == T(0) and x == T(0): # avoid atan2(0,0) - handle singularity - Matiis
+    T(T(2)*arctan2(q.x,q.w))
+  else:
+    T(arctan2(y,x))
+
+proc yaw*[T](q: Quat[T]): T =
+  arcsin(clamp(T(-2) * (q.x * q.z - q.w * q.y), T(-1), T(1)))
+
+proc eulerAngles*[T](x: Quat[T]): Vec3[T] =
+  vec3(pitch(x), yaw(x), roll(x))
+
+proc dot*[T](a, b: Quat[T]): T {.inline.} =
+  a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
+
+const epsilon = 0.0001
+
+
+proc fastMix*[T](a,b: Quat[T]; alpha: T) : Quat[T] =
   ## Returns a normalized linear interpolated quaternion of x and y according a.
   normalize(a * (1 - alpha) + b * alpha)
+
+proc mix*[T](x,y: Quat[T]; a: T): Quat[T] =
+  let cosTheta: T = dot(x, y)
+  # Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
+  if cosTheta > T(1) - T(epsilon):
+    # Linear interpolation
+    return quat(
+      mix(x.x, y.x, a),
+      mix(x.y, y.y, a),
+      mix(x.z, y.z, a),
+      mix(x.w, y.w, a))
+  else:
+    # Essential Mathematics, page 467
+    let angle: T = arccos(cosTheta);
+    return (sin((T(1) - a) * angle) * x + sin(a * angle) * y) / sin(angle)
+
+
+proc slerp*[T](x,y: Quat[T]; a: T): Quat[T] =
+  ## same as mix, just that it ensures to take the sort path around the sphere
+  var z = y
+  var cosTheta: T = dot(x, y)
+
+  if cosTheta < 0:
+    z = -y
+    cosTheta = -cosTheta
+
+  # Perform a linear interpolation when cosTheta is close to 1 to avoid side effect of sin(angle) becoming a zero denominator
+  if cosTheta > T(1) - T(epsilon):
+    # Linear interpolation
+    return quat(
+      mix(x.x, y.x, a),
+      mix(x.y, y.y, a),
+      mix(x.z, y.z, a),
+      mix(x.w, y.w, a))
+  else:
+    # Essential Mathematics, page 467
+    let angle: T = arccos(cosTheta);
+    return (sin((T(1) - a) * angle) * x + sin(a * angle) * y) / sin(angle)
 
 proc conjugate[T](q: Quat[T]): Quat[T] =
   result.arr[0] = -q[0]
@@ -157,8 +255,6 @@ proc conjugate[T](q: Quat[T]): Quat[T] =
   result.arr[2] = -q[2]
   result.arr[3] =  q[3]
 
-proc dot[T](a, b: Quat[T]): T {.inline.} =
-  a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
 
 proc inverse*[T](q: Quat[T]) : Quat[T] =
   return conjugate(q) / dot(q, q);
@@ -209,6 +305,11 @@ proc poseMatrix*[T](translate: Vec3[T]; rotate: Quat[T]; scale: Vec3[T]): Mat4[T
   result[2] = vec4(scalerot_mat[2], 0)
   result[3] = vec4(translate,    1)
 
+proc quat*[T](u,v: Vec3[T]): Quat[T] =
+  let LocalW: Vec3[T] = cross(u,v)
+  let Dot: T = dot(u,v)
+  let q = quat(LocalW.x, LocalW.y, LocalW.z, T(1))
+  normalize(q)
 
 type
   Quatf* = Quat[float32]
@@ -216,12 +317,15 @@ type
 
 proc quatf*(x,y,z,w : float32) : Quatf {.inline.} =  Quatf(arr: [x,y,z,w])
 proc quatf*(axis: Vec3f; angle: float32): Quatf = quat[float32](axis,angle)
+proc quatf*(u,v: Vec3f): Quatf = quat(u,v)
 proc quatf*(mat: Mat3f): Quatf = quat[float32](mat)
+proc quatf*(): Quatf = Quatf(arr: [0.0f,0,0,1])
 
 proc quatd*(x,y,z,w : float64) : Quatd {.inline.} =  Quatd(arr: [x,y,z,w])
 proc quatd*(axis: Vec3d; angle: float64): Quatd = quat[float64](axis,angle)
+proc quatd*(u,v: Vec3d): Quatd = quat(u,v)
 proc quatd*(mat: Mat3d): Quatd = quat[float64](mat)
-
+proc quatd*(): Quatd = Quatd(arr: [0.0d,0,0,1])
 
 #[
 proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
