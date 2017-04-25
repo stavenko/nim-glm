@@ -40,6 +40,23 @@ proc scale*[T](m:Mat4x4[T], v:Vec3[T]): Mat4x4[T] =
     result[1] = m[1] * v[1]
     result[2] = m[2] * v[2]
 
+proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
+  ## Define a picking region
+  assert(delta.x > T(0) and delta.y > T(0))
+  result = mat4(T(1))
+  if not (delta.x > T(0) and delta.y > T(0)):
+    return # Error
+
+  let Temp: Vec3[T] = vec3(
+    (viewport[2] - T(2) * (center.x - viewport[0])) / delta.x,
+    (viewport[3] - T(2) * (center.y - viewport[1])) / delta.y,
+    T(0)
+  )
+
+  # Translate and scale the picked region to the entire window
+  result = translate(result, Temp)
+  result = scale(result, vec3(viewport[2] / delta.x, viewport[3] / delta.y, T(1)))
+
 proc ortho*[T]( left, right, bottom, top, zNear, zFar:T): Mat4x4[T] =
     result = mat4[T](1.0)
     result[0,0] = T(2) / (right - left)
@@ -124,7 +141,7 @@ proc frustum*(left, right, bottom, top, near, far: SomeReal): Mat4[SomeReal] =
   result[2][1] =   (top+bottom)/(top-bottom)
   result[2][3] = -1
   result[3][2] =   (2*far*near)/(near-far)
-        
+
 when isMainModule:
     var m = mat4d()
     var nm = translate(m, vec3(5.0, 5.0, 5.0))
