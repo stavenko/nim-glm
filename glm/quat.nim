@@ -74,37 +74,50 @@ proc quat*[T](axis: Vec3[T]; angle: T): Quat[T] =
   result.z = axis.z * s
   result.w = cos(angle / 2)
 
-proc quat*[T](mat: Mat3[T]): Quat[T] =
+proc quat*[T](m: Mat3[T]): Quat[T] =
   ## mat needs to be rotation matrix (orthogonal, det(mat) = 1)
-  let tr = mat[0,0] + mat[1,1] + mat[2,2]
-  if tr > 0:
-    ##  S=4*qw
-    var S: cfloat = sqrt(tr + 1.0) * 2
-    result.w = 0.25 * S
-    result.x = (mat[2,1] - mat[1,2]) / S
-    result.y = (mat[0,2] - mat[2,0]) / S
-    result.z = (mat[1,0] - mat[0,1]) / S
-  elif (mat[0,0] > mat[1,1]) and (mat[0,0] > mat[2,2]):
-    ##  S=4*qx
-    var S: cfloat = sqrt(1.0 + mat[0,0] - mat[1,1] - mat[2,2]) * 2
-    result.w = (mat[2,1] - mat[1,2]) / S
-    result.x = 0.25 * S
-    result.y = (mat[0,1] + mat[1,0]) / S
-    result.z = (mat[0,2] + mat[2,0]) / S
-  elif mat[1,1] > mat[2,2]:
-    ##  S=4*qy
-    var S: cfloat = sqrt(1.0 + mat[1,1] - mat[0,0] - mat[2,2]) * 2
-    result.w = (mat[0,2] - mat[2,0]) / S
-    result.x = (mat[0,1] + mat[1,0]) / S
-    result.y = 0.25 * S
-    result.z = (mat[1,2] + mat[2,1]) / S
-  else:
-    ##  S=4*qz
-    var S: cfloat = sqrt(1.0 + mat[2,2] - mat[0,0] - mat[1,1]) * 2
-    result.w = (mat[1,0] - mat[0,1]) / S
-    result.x = (mat[0,2] + mat[2,0]) / S
-    result.y = (mat[1,2] + mat[2,1]) / S
-    result.z = 0.25 * S
+
+  let fourXSquaredMinus1 = m[0][0] - m[1][1] - m[2][2];
+  let fourYSquaredMinus1 = m[1][1] - m[0][0] - m[2][2];
+  let fourZSquaredMinus1 = m[2][2] - m[0][0] - m[1][1];
+  let fourWSquaredMinus1 = m[0][0] + m[1][1] + m[2][2];
+
+  var biggestIndex: 0..3 = 0;
+  var fourBiggestSquaredMinus1 = fourWSquaredMinus1;
+  if fourXSquaredMinus1 > fourBiggestSquaredMinus1:
+      fourBiggestSquaredMinus1 = fourXSquaredMinus1;
+      biggestIndex = 1;
+  if fourYSquaredMinus1 > fourBiggestSquaredMinus1:
+      fourBiggestSquaredMinus1 = fourYSquaredMinus1;
+      biggestIndex = 2;
+  if fourZSquaredMinus1 > fourBiggestSquaredMinus1:
+      fourBiggestSquaredMinus1 = fourZSquaredMinus1;
+      biggestIndex = 3;
+
+  let biggestVal = sqrt(fourBiggestSquaredMinus1 + T(1)) * T(0.5);
+  let mult = T(0.25) / biggestVal;
+
+  case biggestIndex
+  of 0:
+    result.w = biggestVal;
+    result.x = (m[1][2] - m[2][1]) * mult;
+    result.y = (m[2][0] - m[0][2]) * mult;
+    result.z = (m[0][1] - m[1][0]) * mult;
+  of 1:
+    result.w = (m[1][2] - m[2][1]) * mult;
+    result.x = biggestVal;
+    result.y = (m[0][1] + m[1][0]) * mult;
+    result.z = (m[2][0] + m[0][2]) * mult;
+  of 2:
+    result.w = (m[2][0] - m[0][2]) * mult;
+    result.x = (m[0][1] + m[1][0]) * mult;
+    result.y = biggestVal;
+    result.z = (m[1][2] + m[2][1]) * mult;
+  of 3:
+    result.w = (m[0][1] - m[1][0]) * mult;
+    result.x = (m[2][0] + m[0][2]) * mult;
+    result.y = (m[1][2] + m[2][1]) * mult;
+    result.z = biggestVal;
 
 proc quat*[T](mat: Mat4[T]): Quat[T] =
   ## mat needs to be rotation matrix (orthogonal, det(mat) = 1

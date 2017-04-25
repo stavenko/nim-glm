@@ -245,20 +245,36 @@ proc test_size(): int =
 
    return Error;
 
+proc test_quat_mat_convert(): int =
+  var Error = 0;
+
+  let a = 1.0f / sqrt(2.0f)
+  let b = 1.0f / sqrt(3.0f)
+
+  for q in [quatf(1,0,0,0), quatf(0,1,0,0), quatf(0,0,1,0), quatf(0,0,0,1),
+            quatf(a,a,0,0), quatf(a,0,a,0), quatf(a,0,0,a), quatf(0,a,a,0), quatf(0,a,0,a), quatf(0,0,a,a),
+            quatf(0,b,b,b), quatf(b,0,b,b), quatf(b,b,0,b), quatf(b,b,b,0)]:
+    let mat = mat3(q)
+    let q2 = quat(mat3(q))
+    Error += (if all(epsilonEqual(q,q2, 0.01f)): 0 else: 1)
+
+  Error
+
 var Error = 0;
 
 #Error += test_quat_ctr();
-Error += test_quat_mul_vec();
-Error += test_quat_two_axis_ctr();
-Error += test_quat_mul();
-#Error += test_quat_precision();
-Error += test_quat_type();
-Error += test_quat_angle();
-Error += test_quat_angleAxis();
-Error += test_quat_mix();
-Error += test_quat_normalize();
-Error += test_quat_euler();
-Error += test_quat_slerp();
-Error += test_size();
+Error += test_quat_mul_vec()
+Error += test_quat_two_axis_ctr()
+Error += test_quat_mul()
+#Error += test_quat_precision()
+Error += test_quat_type()
+Error += test_quat_angle()
+Error += test_quat_angleAxis()
+Error += test_quat_mix()
+Error += test_quat_normalize()
+Error += test_quat_euler()
+Error += test_quat_slerp()
+Error += test_size()
+Error += test_quat_mat_convert()
 
 quit(Error)
