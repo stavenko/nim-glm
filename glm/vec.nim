@@ -212,13 +212,14 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
 
     for idx in indices:
       let lit = newLit(idx)
-      bracket.add head quote do:
+      bracket.add(quote do:
         `v`.arr[`lit`]
+      )
 
-    result.add head quote do:
+    result.add head(quote do:
       proc `getIdent`*[N,T](`v`: Vec[N,T]): Vec[`Nlit`,T] {.inline.} =
         Vec[`Nlit`,T](arr: `bracket`)
-
+    )
     #if continuousIndices(indices):
     #  echo result.back.repr
 
@@ -227,10 +228,10 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
 
       let offsetLit = newLit(indices[0])
       let lengthLit = newLit(indices.len)
-      result.add head quote do:
+      result.add head(quote do:
         proc `getIdent`*[N,T](v: var Vec[N,T]): var Vec[`Nlit`,T] {.inline.} =
           v.subVec(`offsetLit`, `lengthLit`)
-
+      )
 
     if growingIndices(indices):
       let N2lit = newLit(indices.len)
@@ -241,16 +242,18 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
       for i,idx in indices:
         let litL = newLit(idx)
         let litR = newLit(i)
-        assignments.add head quote do:
+        assignments.add head(quote do:
           `v1`.arr[`litL`] = `v2`.arr[`litR`]
+        )
 
-      result.add head quote do:
+      result.add head(quote do:
         proc `setIdent`*[N,T](`v1`: var Vec[N,T]; `v2`: Vec[`N2lit`,T]): void =
           `assignments`
+      )
 
   else:
     let lit = newLit(indices[0])
-    result.add quote do:
+    result.add(quote do:
       proc `getIdent`*[N,T](v: Vec[N,T]): T {.inline.} =
         v.arr[`lit`]
 
@@ -259,6 +262,7 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
 
       proc `setIdent`*[N,T](v: var Vec[N,T]; val: T): void {.inline.} =
         v.arr[`lit`] = val
+    )
 
 
 

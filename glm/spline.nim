@@ -1,12 +1,12 @@
 import mat
 import vec
 
-
+#[
 proc catmullRom*[N,T](v1,v2,v3,v4: Vec[N,T]; s: T): Vec[N,T] =
   ## return a point from a catmull rom curve
-  let s1 = s;
-  let s2 = pow2(s);
-  let s3 = pow3(s);
+  let s1 = s
+  let s2 = s*s
+  let s3 = s*s2
 
   let f1 = -s3 + T(2) * s2 - s
   let f2 = T(3) * s3 - T(5) * s2 + T(2)
@@ -19,8 +19,8 @@ proc catmullRom*[N,T](v1,v2,v3,v4: Vec[N,T]; s: T): Vec[N,T] =
 proc    hermite*[N,T](v1,v2,v3,v4: Vec[N,T]; s: T): Vec[N,T] =
   ## return a point from a hermite curve
   let s1 = s;
-  let s2 = pow2(s);
-  let s3 = pow3(s);
+  let s2 = s*s;
+  let s3 = s*s2;
   let f1 = T(2) * s3 - T(3) * s2 + T(1);
   let f2 = T(-2) * s3 + T(3) * s2;
   let f3 = s3 - T(2) * s2 + s;
@@ -31,3 +31,4 @@ proc    hermite*[N,T](v1,v2,v3,v4: Vec[N,T]; s: T): Vec[N,T] =
 proc      cubic*[N,T](v1,v2,v3,v4: Vec[N,T]; s: T): Vec[N,T] =
   ## return a point from a cubic curve
 	return ((v1 * s + v2) * s + v3) * s + v4
+]#
