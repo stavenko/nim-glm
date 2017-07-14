@@ -3,8 +3,11 @@ import mat
 import vec
 
 proc translate*[T](m:Mat4[T]; v:Vec3[T]): Mat4x4[T] =
-  result = m
-  result[3] = (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2] ) + m[3]
+  let vv = vec4(v,0)
+  result[0] = m[0] + vv * m[0].w
+  result[1] = m[1] + vv * m[1].w
+  result[2] = m[2] + vv * m[2].w
+  result[3] = m[3] + vv * m[3].w
 
 proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] =
     let
@@ -34,11 +37,28 @@ proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] =
     result[2] = m[0] * Rotate[2,0] + m[1] * Rotate[2,1] + m[2] * Rotate[2,2]
     result[3] = m[3]
 
+proc rotateX*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(1,0,0), angle)
+proc rotateY*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(0,1,0), angle)
+proc rotateZ*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(0,0,1), angle)
+
+proc scale*[T](m:Mat4x4[T], x,y,z: T): Mat4x4[T] =
+  result[0] = m[0] * x
+  result[1] = m[1] * y
+  result[2] = m[2] * z
+  result[3] = m[3]
+
 proc scale*[T](m:Mat4x4[T], v:Vec3[T]): Mat4x4[T] =
-    result = m
-    result[0] = m[0] * v[0]
-    result[1] = m[1] * v[1]
-    result[2] = m[2] * v[2]
+  result[0] = m[0] * v[0]
+  result[1] = m[1] * v[1]
+  result[2] = m[2] * v[2]
+  result[3] = m[3]
+
+proc scale*[T](m:Mat4x4[T], s: T): Mat4x4[T] =
+  ## uniform scaling in 3 Dimensions
+  result[0] = m[0] * s
+  result[1] = m[1] * s
+  result[2] = m[2] * s
+  result[3] = m[3]
 
 proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
   ## Define a picking region
