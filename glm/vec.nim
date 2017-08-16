@@ -815,13 +815,11 @@ when isMainModule:
 
   v1.zw /= vec2(3)
 
-  echo v1
+  doAssert $v1 == "[0  11  3  0]"
 
-  for row in columnFormat( vec4(0.001, 1.000, 100.0, 0) ):
-    echo row
-
-  for row in columnFormat( vec4(1,10,100,1000) ):
-    echo row
-
-  for row in columnFormat( vec4("a", "ab", "abc", "abcd") ):
-    echo row
+  doAssert columnFormat( vec4(0.001, 1.000, 100.0, 0) ) ==
+    ["  0.001", "  1.0  ", "100.0  ", "  0.0  "]
+  doAssert columnFormat( vec4(1,10,100,1000) ) ==
+    ["   1", "  10", " 100", "1000"]
+  doAssert columnFormat(vec4("a", "ab", "abc", "abcd")) ==
+    ["a   ", "ab  ", "abc ", "abcd"]

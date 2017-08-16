@@ -77,7 +77,7 @@ proc scale*[T](m:Mat4[T], x,y,z: T): Mat4[T] {.inline.} =
 
 proc scale*[T](m:Mat4[T], s: T): Mat4[T] {.inline.} =
   result = m
-  m.scale(s)
+  result.scaleInpl(s)
 
 proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
   ## Define a picking region
