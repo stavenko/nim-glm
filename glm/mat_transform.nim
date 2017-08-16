@@ -2,8 +2,12 @@ import globals
 import mat
 import vec
 
-proc translateInpl*[T](m: var Mat4[T]; v:Vec3[T]): void {.inline.} =
-  m[3] += (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2])
+proc translateInpl*[T](m:var Mat4[T]; v:Vec3[T]): void {.inline.} =
+  let vv = vec4(v,0)
+  m[0] += vv * m[0].w
+  m[1] += vv * m[1].w
+  m[2] += vv * m[2].w
+  m[3] += vv * m[3].w
 
 proc translateInpl*[T](m: var Mat4[T]; x,y,z:T): void {.inline.} =
   m.translateInpl(vec3(x,y,z))
@@ -16,7 +20,7 @@ proc translate*[T](m:Mat4[T]; x,y,z:T): Mat4[T] {.inline.} =
   result = m
   result.translateInpl(vec3(x,y,z))
 
-proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] =
+proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] {.inline.} =
     let
         a = angle
         c = cos(a)
@@ -44,6 +48,9 @@ proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] =
     result[2] = m[0] * Rotate[2,0] + m[1] * Rotate[2,1] + m[2] * Rotate[2,2]
     result[3] = m[3]
 
+proc rotateX*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(1,0,0), angle)
+proc rotateY*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(0,1,0), angle)
+proc rotateZ*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(0,0,1), angle)
 
 proc scaleInpl*[T](m:var Mat4[T], v:Vec3[T]): void {.inline.} =
   m[0] *= v[0]
@@ -51,7 +58,14 @@ proc scaleInpl*[T](m:var Mat4[T], v:Vec3[T]): void {.inline.} =
   m[2] *= v[2]
 
 proc scaleInpl*[T](m:var Mat4[T], x,y,z:T): void {.inline.} =
-  m.scaleInpl(vec3(x,y,z))
+  m[0] *= x
+  m[1] *= y
+  m[2] *= z
+
+proc scaleInpl*[T](m:var Mat4[T], s: T): void {.inline.} =
+  m[0] *= s
+  m[1] *= s
+  m[2] *= s
 
 proc scale*[T](m:Mat4[T], v:Vec3[T]): Mat4x4[T] {.inline.} =
   result = m
@@ -59,7 +73,11 @@ proc scale*[T](m:Mat4[T], v:Vec3[T]): Mat4x4[T] {.inline.} =
 
 proc scale*[T](m:Mat4[T], x,y,z: T): Mat4[T] {.inline.} =
   result = m
-  result.scaleInpl(vec3f(x,y,z))
+  result.scaleInpl(x,y,z)
+
+proc scale*[T](m:Mat4[T], s: T): Mat4[T] {.inline.} =
+  result = m
+  m.scale(s)
 
 proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
   ## Define a picking region
@@ -78,7 +96,7 @@ proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
   result = translate(result, Temp)
   result = scale(result, vec3(viewport[2] / delta.x, viewport[3] / delta.y, T(1)))
 
-proc ortho*[T]( left, right, bottom, top, zNear, zFar:T): Mat4x4[T] =
+proc ortho*[T]( left, right, bottom, top, zNear, zFar:T): Mat4[T] =
     result = mat4[T](1.0)
     result[0,0] = T(2) / (right - left)
     result[1,1] = T(2) / (top - bottom)
@@ -88,7 +106,7 @@ proc ortho*[T]( left, right, bottom, top, zNear, zFar:T): Mat4x4[T] =
     result[3,2] = -(zFar + zNear) / (zFar - zNear)
     result[3,3] = 1
 
-proc perspectiveLH*[T]( fovy, aspect, zNear, zFar:T): Mat4x4[T] =
+proc perspectiveLH*[T]( fovy, aspect, zNear, zFar:T): Mat4[T] =
     let tanHalfFovy = tan(fovy / T(2))
     result = mat4[T](0.0)
     result[0,0] = T(1) / (aspect * tanHalfFovy)
@@ -97,7 +115,7 @@ proc perspectiveLH*[T]( fovy, aspect, zNear, zFar:T): Mat4x4[T] =
     result[2,3] = T(1)
     result[3,2] = - (T(2) * zFar * zNear) / (zFar - zNear)
 
-proc perspectiveRH*[T]( fovy, aspect, zNear, zFar:T): Mat4x4[T] =
+proc perspectiveRH*[T]( fovy, aspect, zNear, zFar:T): Mat4[T] =
     let tanHalfFovy = tan(fovy / T(2))
     result = mat4[T](0.0)
     result[0,0] = T(1) / (aspect * tanHalfFovy)
@@ -107,7 +125,7 @@ proc perspectiveRH*[T]( fovy, aspect, zNear, zFar:T): Mat4x4[T] =
     result[2,2] = -(zFar + zNear) / (zFar - zNear)
     result[3,2] = -(T(2) * zFar * zNear) / (zFar - zNear)
 
-proc lookAtRH*[T](eye,center,up:Vec3[T]): Mat4x4[T] =
+proc lookAtRH*[T](eye,center,up:Vec3[T]): Mat4[T] =
     let
         f = normalize(center - eye)
         s = normalize(cross(f, up))
@@ -121,7 +139,7 @@ proc lookAtRH*[T](eye,center,up:Vec3[T]): Mat4x4[T] =
     result[3,1] = -dot(u, eye)
     result[3,2] = dot(f, eye)
 
-proc lookAtLH*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
+proc lookAtLH*[T](eye,center,up:Vec3[T]):Mat4[T]=
     let
         f = normalize(center - eye)
         s = normalize(cross(f, up))
@@ -144,14 +162,14 @@ proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
 
 
 when GLM_LEFT_HAND:
-    proc perspective*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
+    proc perspective*[T]( fovy, aspect, zNear, zFar:T):Mat4[T]=
         perspectiveLH(fovy, aspect, zNear, zFar)
-    proc lookAt*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
+    proc lookAt*[T](eye,center,up:Vec3[T]):Mat4[T]=
         lookAtLH(eye,center, up)
 else:
-    proc perspective*[T]( fovy, aspect, zNear, zFar:T):Mat4x4[T]=
+    proc perspective*[T]( fovy, aspect, zNear, zFar:T):Mat4[T]=
         perspectiveRH(fovy, aspect, zNear, zFar)
-    proc lookAt*[T](eye,center,up:Vec3[T]):Mat4x4[T]=
+    proc lookAt*[T](eye,center,up:Vec3[T]):Mat4[T]=
         lookAtRH(eye, center, up)
 
 proc frustum*(left, right, bottom, top, near, far: SomeReal): Mat4[SomeReal] =

@@ -233,7 +233,6 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
           v.subVec(`offsetLit`, `lengthLit`)
       )
 
-
     if growingIndices(indices):
       let N2lit = newLit(indices.len)
       let v1 = genSym(nskParam, "v1")
@@ -265,7 +264,6 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
         v.arr[`lit`] = val
     )
 
-
 macro genSwizzleOps*(): untyped =
   result = newStmtList()
   for i in 0 .. 3:
@@ -282,7 +280,6 @@ genSwizzleOps()
 proc caddr*[N,T](v:var Vec[N,T]): ptr T {.inline.}=
   ## Address getter to pass vector to native-C openGL functions as pointers
   v.arr[0].addr
-
 
 ####################################
 # Angle and Trigonometry Functions #
