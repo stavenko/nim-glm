@@ -2,9 +2,19 @@ import globals
 import mat
 import vec
 
-proc translate*[T](m:Mat4[T]; v:Vec3[T]): Mat4x4[T] =
+proc translateInpl*[T](m: var Mat4[T]; v:Vec3[T]): void {.inline.} =
+  m[3] += (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2])
+
+proc translateInpl*[T](m: var Mat4[T]; x,y,z:T): void {.inline.} =
+  m.translateInpl(vec3(x,y,z))
+
+proc translate*[T](m:Mat4[T]; v:Vec3[T]): Mat4[T] {.inline.} =
   result = m
-  result[3] = (m[0] * v[0]) + (m[1] * v[1]) + (m[2] * v[2] ) + m[3]
+  result.translateInpl(v)
+
+proc translate*[T](m:Mat4[T]; x,y,z:T): Mat4[T] {.inline.} =
+  result = m
+  result.translateInpl(vec3(x,y,z))
 
 proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] =
     let
@@ -34,11 +44,22 @@ proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] =
     result[2] = m[0] * Rotate[2,0] + m[1] * Rotate[2,1] + m[2] * Rotate[2,2]
     result[3] = m[3]
 
-proc scale*[T](m:Mat4x4[T], v:Vec3[T]): Mat4x4[T] =
-    result = m
-    result[0] = m[0] * v[0]
-    result[1] = m[1] * v[1]
-    result[2] = m[2] * v[2]
+
+proc scaleInpl*[T](m:var Mat4[T], v:Vec3[T]): void {.inline.} =
+  m[0] *= v[0]
+  m[1] *= v[1]
+  m[2] *= v[2]
+
+proc scaleInpl*[T](m:var Mat4[T], x,y,z:T): void {.inline.} =
+  m.scaleInpl(vec3(x,y,z))
+
+proc scale*[T](m:Mat4[T], v:Vec3[T]): Mat4x4[T] {.inline.} =
+  result = m
+  result.scaleInpl(v)
+
+proc scale*[T](m:Mat4[T], x,y,z: T): Mat4[T] {.inline.} =
+  result = m
+  result.scaleInpl(vec3f(x,y,z))
 
 proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
   ## Define a picking region
