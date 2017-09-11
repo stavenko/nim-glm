@@ -1,8 +1,8 @@
 [Package]
 name          = "glm"
-version       = "0.1.1"
-author        = "Vasiliy G. Stavenko"
-description   = "GLM library inspired by c++ library with same name"
+version       = "0.2.0"
+author        = "Arne Döring"
+description   = "Nim port of the OpenGL Mathematics (GLM) library"
 license       = "MIT"
 
 [Deps]
