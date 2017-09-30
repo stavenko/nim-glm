@@ -187,7 +187,8 @@ proc continuousIndices(indices: varargs[int]): bool =
       return false
   return true
 
-proc head(node: NimNode): NimNode {.compileTime.} = node[0]
+proc head(n: NimNode): NimNode {.compileTime.} =
+  if n.kind == nnkStmtList and n.len == 1: result = n[0] else: result = n
 
 proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compileTime.}=
   result.newSeq(0)
@@ -208,12 +209,13 @@ proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compil
 
     for idx in indices:
       let lit = newLit(idx)
-      bracket.add quote do:
-        `v`.arr[`lit`]
+      bracket.add head(quote do:
+        `v`.arr[`lit`])
 
-    result.add quote do:
+    result.add head(quote do:
       proc `getIdent`*[N,T](`v`: Vec[N,T]): Vec[`Nlit`,T] {.inline.} =
         Vec[`Nlit`,T](arr: `bracket`)
+    )
 
     #if continuousIndices(indices):
     #  echo result.back.repr
@@ -223,9 +225,10 @@ proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compil
 
       let offsetLit = newLit(indices[0])
       let lengthLit = newLit(indices.len)
-      result.add quote do:
+      result.add head(quote do:
         proc `getIdent`*[N,T](v: var Vec[N,T]): var Vec[`Nlit`,T] {.inline.} =
           v.subVec(`offsetLit`, `lengthLit`)
+      )
 
 
     if growingIndices(indices):
@@ -241,9 +244,10 @@ proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compil
           `v1`.arr[`litL`] = `v2`.arr[`litR`]
         )
 
-      result.add quote do:
+      result.add head(quote do:
         proc `setIdent`*[N,T](`v1`: var Vec[N,T]; `v2`: Vec[`N2lit`,T]): void =
           `assignments`
+      )
 
   else:
     let lit = newLit(indices[0])
