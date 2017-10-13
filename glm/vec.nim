@@ -187,7 +187,8 @@ proc continuousIndices(indices: varargs[int]): bool =
       return false
   return true
 
-proc head(node: NimNode): NimNode {.compileTime.} = node[0]
+proc head(n: NimNode): NimNode {.compileTime.} =
+  if n.kind == nnkStmtList and n.len == 1: result = n[0] else: result = n
 
 proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compileTime.}=
   result.newSeq(0)
