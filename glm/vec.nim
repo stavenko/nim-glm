@@ -1,5 +1,3 @@
-#import strutils
-#import sequtils
 import macros, math
 
 export math.Pi
@@ -189,12 +187,11 @@ proc continuousIndices(indices: varargs[int]): bool =
       return false
   return true
 
-proc head(node: NimNode): NimNode {.compileTime.} = node[0]
+proc head(n: NimNode): NimNode {.compileTime.} =
+  if n.kind == nnkStmtList and n.len == 1: result = n[0] else: result = n
 
-proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
+proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compileTime.}=
   result.newSeq(0)
-
-  const chars = "xyzw"
 
   var name = ""
   for idx in indices:
@@ -264,18 +261,20 @@ proc swizzleMethods(indices: varargs[int]) : seq[NimNode] {.compileTime.}=
         v.arr[`lit`] = val
     )
 
-macro genSwizzleOps*(): untyped =
+macro genSwizzleOps(chars: static[string]): untyped =
   result = newStmtList()
   for i in 0 .. 3:
-    result.add swizzleMethods(i)
+    result.add swizzleMethods(i, chars)
     for j in 0 .. 3:
-      result.add swizzleMethods(i,j)
+      result.add swizzleMethods(i,j, chars)
       for k in 0 .. 3:
-        result.add swizzleMethods(i,j,k)
+        result.add swizzleMethods(i,j,k, chars)
         for m in 0 .. 3:
-          result.add swizzleMethods(i,j,k,m)
+          result.add swizzleMethods(i,j,k,m, chars)
 
-genSwizzleOps()
+genSwizzleOps("xyzw")
+genSwizzleOps("rgba")
+genSwizzleOps("stpq")
 
 proc caddr*[N,T](v:var Vec[N,T]): ptr T {.inline.}=
   ## Address getter to pass vector to native-C openGL functions as pointers
