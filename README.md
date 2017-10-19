@@ -31,3 +31,13 @@ Use it in OpenGL environment:
       .translate(1,2,3)
 
     glUniformMatrix4fv(_uniformLocation, 1, false, modelView.caddr)
+
+There is swizzling support:
+
+    var pos1,pos2: Vec4f
+    pos1.xyz = pos2.zww
+    pos1.yz += pos2.ww
+    var texcoord: Vec2f
+    echo texcoord.st
+    var color: Vec4f
+    color.rgb = color.bgr
