@@ -45,9 +45,9 @@ proc rotate*[T](m:Mat4x4[T]; angle:T, axis:Vec3[T]): Mat4x4[T] {.inline.} =
     result[3] = m[3]
 
 proc rotate*[T](m:Mat4x4[T]; angle,x,y,z:T): Mat4x4[T] = rotate(m, angle, vec3(x,y,z))
-proc rotateX*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3f(1,0,0))
-proc rotateY*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3f(0,1,0))
-proc rotateZ*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3f(0,0,1))
+proc rotateX*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3[T](1,0,0))
+proc rotateY*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3[T](0,1,0))
+proc rotateZ*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3[T](0,0,1))
 
 proc rotateInpl*[T](m:  var Mat4x4[T]; angle:T, axis:Vec3[T]): void {.inline.} =
   m = m.rotate(angle, axis)
