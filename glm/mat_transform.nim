@@ -3,11 +3,7 @@ import mat
 import vec
 
 proc translateInpl*[T](m:var Mat4[T]; v:Vec3[T]): void {.inline.} =
-  let vv = vec4(v,0)
-  m[0] += vv * m[0].w
-  m[1] += vv * m[1].w
-  m[2] += vv * m[2].w
-  m[3] += vv * m[3].w
+  m[3] = m * vec4(v,1)
 
 proc translateInpl*[T](m: var Mat4[T]; x,y,z:T): void {.inline.} =
   m.translateInpl(vec3(x,y,z))

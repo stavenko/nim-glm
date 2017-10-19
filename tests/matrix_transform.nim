@@ -51,7 +51,7 @@ block testTranslate:
   glTranslatef(1,2,3)
 
   mat2 = getModelViewMatrix()
-  doAssert matrixCompare(mat1, mat2) < 1e5
+  doAssert matrixCompare(mat1, mat2) < 1e-5
 
 block testScale:
   mat1 = mat4f(1)
@@ -62,7 +62,7 @@ block testScale:
 
   mat2 = getModelViewMatrix()
 
-  doAssert matrixCompare(mat1, mat2) < 1e5
+  doAssert matrixCompare(mat1, mat2) < 1e-5
 
 block testRotate:
   mat1 = mat4f(1)
@@ -75,7 +75,7 @@ block testRotate:
 
   glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
 
-  doAssert matrixCompare(mat1, mat2) < 1e5
+  doAssert matrixCompare(mat1, mat2) < 1e-5
 
 block testAll:
   mat1 = mat4f(1)
@@ -92,4 +92,22 @@ block testAll:
 
   glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
 
-  doAssert matrixCompare(mat1, mat2) < 1e5
+  doAssert matrixCompare(mat1, mat2) < 1e-5
+
+block testAll2:
+  # tests a permutation of the matrix operations
+  mat1 = mat4f(1)
+    .rotate(alpha, n.x, n.y, n.z)
+    .scale(4,5,6)
+    .translate(1,2,3)
+
+  glMatrixMode(GL_MODELVIEW)
+
+  glLoadIdentity()
+  glRotatef(alpha * 180 / Pi, n.x, n.y, n.z)
+  glScalef(4,5,6)
+  glTranslatef(1,2,3)
+
+  glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
+
+  doAssert matrixCompare(mat1, mat2) < 1e-5
