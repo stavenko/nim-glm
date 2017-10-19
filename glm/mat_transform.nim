@@ -20,15 +20,15 @@ proc translate*[T](m:Mat4[T]; x,y,z:T): Mat4[T] {.inline.} =
   result = m
   result.translateInpl(vec3(x,y,z))
 
-proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] {.inline.} =
+proc rotate*[T](m:Mat4x4[T]; angle:T, axis:Vec3[T]): Mat4x4[T] {.inline.} =
     let
-        a = angle
-        c = cos(a)
-        s = sin(a)
+      a = angle
+      c = cos(a)
+      s = sin(a)
     var
-        naxis = normalize(axis)
-        temp  = T(1 - c) * naxis
-        Rotate = mat4[T](0)
+      naxis = normalize(axis)
+      temp  = T(1 - c) * naxis
+      Rotate = mat4[T](0)
 
     Rotate[0,0] = c + temp[0] * axis[0]
     Rotate[0,1] = 0 + temp[0] * axis[1] + s * axis[2]
@@ -48,9 +48,21 @@ proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T]; angle:T): Mat4x4[T] {.inline.} =
     result[2] = m[0] * Rotate[2,0] + m[1] * Rotate[2,1] + m[2] * Rotate[2,2]
     result[3] = m[3]
 
-proc rotateX*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(1,0,0), angle)
-proc rotateY*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(0,1,0), angle)
-proc rotateZ*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, vec3f(0,0,1), angle)
+proc rotate*[T](m:Mat4x4[T]; angle,x,y,z:T): Mat4x4[T] = rotate(m, angle, vec3(x,y,z))
+proc rotateX*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3f(1,0,0))
+proc rotateY*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3f(0,1,0))
+proc rotateZ*[T](m:Mat4x4[T]; angle:T): Mat4x4[T] = rotate(m, angle, vec3f(0,0,1))
+
+proc rotateInpl*[T](m:  var Mat4x4[T]; angle:T, axis:Vec3[T]): void {.inline.} =
+  m = m.rotate(angle, axis)
+proc rotateInpl*[T](m:  var Mat4x4[T]; angle,x,y,z: T): void {.inline.} =
+  m = m.rotate(angle, vec3(x,y,z))
+proc rotateInplX*[T](m: var Mat4x4[T]; angle:T): void {.inline.} =
+  m = m.rotate(angle, vec3[T](1,0,0))
+proc rotateInplY*[T](m: var Mat4x4[T]; angle:T): void {.inline.} =
+  m = m.rotate(angle, vec3[T](0,1,0))
+proc rotateInplZ*[T](m: var Mat4x4[T]; angle:T): void {.inline.} =
+  m = m.rotate(angle, vec3[T](0,0,1))
 
 proc scaleInpl*[T](m:var Mat4[T], v:Vec3[T]): void {.inline.} =
   m[0] *= v[0]
