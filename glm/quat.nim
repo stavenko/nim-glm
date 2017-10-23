@@ -272,15 +272,16 @@ proc conjugate[T](q: Quat[T]): Quat[T] =
   result.arr[2] = -q[2]
   result.arr[3] =  q[3]
 
-
 proc inverse*[T](q: Quat[T]) : Quat[T] =
   return conjugate(q) / dot(q, q);
 
-#proc rotate[T](q: Quat[T]):
 proc rotate*[T](q: Quat[T]; angle: T; v: Vec3[T]) : Quat[T] =
   ## rotates q around the axis v by the given angle in radians
-  result.xyz = normalize(v) * sin(angle * 0.5)
-  result.w = cos(angle * 0.5)
+  ## normalizes ``v`` for you.
+  result.arr = vec4(
+    normalize(v) * sin(angle * 0.5),
+    cos(angle * 0.5)
+  ).arr
   result = q * result
 
 proc mat3*[T](q : Quat[T]) : Mat3[T] =

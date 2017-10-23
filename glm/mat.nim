@@ -224,7 +224,6 @@ proc mat2*[T](s: T): Mat2[T] =
   for i in 0 .. 1:
     result.arr[i].arr[i] = s
 
-
 proc mat4*[T]() : Mat4[T] =
   for i in 0 .. 3:
     result.arr[i].arr[i] = T(1)
