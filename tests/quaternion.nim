@@ -1,5 +1,6 @@
 import ../glm
 
+
 proc epsilonEqual(a,b,epsilon: float32): bool =
   return abs(a - b) < epsilon
 
@@ -7,12 +8,22 @@ proc epsilonEqual(a,b: Quatf; epsilon: float32): Vec4b =
   for i, x in a - b:
     result[i] = abs(x) < epsilon
 
-proc epsilonEqual(a,b: Vec3f; epsilon: float32): Vec3b =
+proc epsilonEqual[N,T](a,b: Vec[N,T]; epsilon: T): Vec[N,bool] =
   for i, x in (a - b).arr:
     result[i] = abs(x) < epsilon
 
+proc epsilonEqual(a,b: Mat4f; epsilon: float32): Mat4[bool] =
+  for i in 0..<4:
+    result[i] = epsilonEqual(a.arr[i], b.arr[i], epsilon)
+
 proc angleAxis(angle: float32, axis: Vec3f): Quatf =
   quatf(axis, angle)
+
+proc all[N,M](arg: Mat[N,M,bool]): bool =
+  for x in arg.arr:
+    if not all(x):
+      return false
+  return true
 
 proc test_quat_angle(): int =
   var Error: int = 0;
@@ -277,4 +288,52 @@ Error += test_quat_slerp()
 Error += test_size()
 Error += test_quat_mat_convert()
 
-quit(Error)
+if Error != 0:
+  quit(Error)
+
+block test_quat_rotate:
+  let HalfPi = float32(PI * 0.5)
+
+  let data = [
+    (HalfPi, vec3f(1,0,0)),
+    (HalfPi, vec3f(0,1,0)),
+    (HalfPi, vec3f(0,0,1)),
+    (HalfPi, vec3f(-1,0,0)),
+    (HalfPi, vec3f(0,-1,0)),
+    (HalfPi, vec3f(0,0,-1)),
+    (0.123f,  vec3f(4,-2,-8))
+  ]
+
+  for angle, axis in data.items:
+    let m1 =
+      quatf()
+      .rotate(angle, axis)
+      .mat4f
+
+    let m2 =
+      mat4f(1)
+      .rotate(angle, axis)
+
+    doAssert all(epsilonEqual(m1,m2, 0.001f))
+
+
+  let m1 =
+    quatf()
+    .rotate(HalfPi, vec3f(1,0,0))
+    .rotate(HalfPi, vec3f(0,1,0))
+    .mat4f
+
+  let m2 =
+    mat4f(1)
+    .rotate(HalfPi, vec3f(1,0,0))
+    .rotate(HalfPi, vec3f(0,1,0))
+
+  doAssert all(epsilonEqual(m1,m2, 0.001f))
+
+proc rotate*[T](q: Quat[T]; angle: T; v: Vec3[T]) : Quat[T] =
+  ## rotates q around the axis v by the given angle in radians
+  result.arr = vec4(
+    normalize(v) * sin(angle * 0.5),
+    cos(angle * 0.5)
+  ).arr
+  result = q * result

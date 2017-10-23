@@ -22,8 +22,8 @@ proc rotate*[T](m:Mat4x4[T]; angle:T, axis:Vec3[T]): Mat4x4[T] {.inline.} =
       c = cos(a)
       s = sin(a)
     var
-      naxis = normalize(axis)
-      temp  = T(1 - c) * naxis
+      axis = normalize(axis)
+      temp  = T(1 - c) * axis
       Rotate = mat4[T](0)
 
     Rotate[0,0] = c + temp[0] * axis[0]
