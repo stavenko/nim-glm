@@ -230,7 +230,6 @@ proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compil
           v.subVec(`offsetLit`, `lengthLit`)
       )
 
-
     if growingIndices(indices):
       let N2lit = newLit(indices.len)
       let v1 = genSym(nskParam, "v1")
@@ -262,7 +261,6 @@ proc swizzleMethods(indices: varargs[int], chars: string): seq[NimNode] {.compil
         v.arr[`lit`] = val
     )
 
-
 macro genSwizzleOps(chars: static[string]): untyped =
   result = newStmtList()
   for i in 0 .. 3:
@@ -281,7 +279,6 @@ genSwizzleOps("stpq")
 proc caddr*[N,T](v:var Vec[N,T]): ptr T {.inline.}=
   ## Address getter to pass vector to native-C openGL functions as pointers
   v.arr[0].addr
-
 
 ####################################
 # Angle and Trigonometry Functions #
@@ -817,13 +814,11 @@ when isMainModule:
 
   v1.zw /= vec2(3)
 
-  echo v1
+  doAssert $v1 == "[0  11  3  0]"
 
-  for row in columnFormat( vec4(0.001, 1.000, 100.0, 0) ):
-    echo row
-
-  for row in columnFormat( vec4(1,10,100,1000) ):
-    echo row
-
-  for row in columnFormat( vec4("a", "ab", "abc", "abcd") ):
-    echo row
+  doAssert columnFormat( vec4(0.001, 1.000, 100.0, 0) ) ==
+    ["  0.001", "  1.0  ", "100.0  ", "  0.0  "]
+  doAssert columnFormat( vec4(1,10,100,1000) ) ==
+    ["   1", "  10", " 100", "1000"]
+  doAssert columnFormat(vec4("a", "ab", "abc", "abcd")) ==
+    ["a   ", "ab  ", "abc ", "abcd"]

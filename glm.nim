@@ -1,7 +1,7 @@
-import glm.vec
-import glm.mat
-import glm.mat_transform
-import glm.quat
+import glm/vec
+import glm/mat
+import glm/mat_transform
+import glm/quat
 
 export vec
 export mat
