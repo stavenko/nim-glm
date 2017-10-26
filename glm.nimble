@@ -1,9 +1,13 @@
-[Package]
-name          = "glm"
-version       = "0.2.0"
+#[ Package ]#
+
+version       = "1.0.0"
 author        = "Arne Döring"
 description   = "Nim port of the OpenGL Mathematics (GLM) library"
 license       = "MIT"
 
-[Deps]
-Requires: "nim >= 0.10.0"
+skipDirs = @["tests", "examples"]
+
+requires("nim >= 0.17.3")
+
+task test, "Runs the test suite":
+  exec "nim c -r tests/testrunner.nim"

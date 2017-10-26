@@ -1,113 +1,125 @@
-import ../glm, sdl2/sdl, opengl
+import glm, sdl2/sdl, opengl
+import unittest
 
-## this test ensures that mat_transform functions behave identical to
-## OpenGL functions, therefore it needs an OpenGL context
-
-var window: Window
-var context: GLContext
-
-block setup:
-  discard sdl.init(INIT_EVERYTHING)
-
-  doAssert 0 == glSetAttribute(GL_CONTEXT_MAJOR_VERSION, 1)
-  doAssert 0 == glSetAttribute(GL_CONTEXT_MINOR_VERSION, 0)
-
-  let posx = WINDOWPOS_UNDEFINED.cint
-  let posy = WINDOWPOS_UNDEFINED.cint
-
-  window = createWindow("window title", posx, posy, 640, 480, WINDOW_OPENGL)
-
-  if window.isNil:
-    quit($sdl.getError())
-
-  context = window.glCreateContext()
-  if context.isNil:
-    quit($sdl.getError())
-
-  #Initialize OpenGL
-  loadExtensions()
-
-  doAssert 0 == glMakeCurrent(window, context)
-
-  glMatrixMode(GL_MODELVIEW)
-
-var alpha: float32 = 123
-var n: Vec3f = vec3f(-7,8,-9).normalize
-var mat1, mat2: Mat4f
+proc compare*[N,M,T](a,b: Mat[N, M, T]): bool =
+  for i in 0 ..< N:
+    for j in 0 ..< M:
+      if abs(a[i][j]-b[i][j]) > 1e-5:
+        return false;
+  return true
 
 proc getModelViewMatrix(): Mat4f =
   glGetFloatv(GL_MODELVIEW_MATRIX, result[0,0].addr)
 
-proc matrixCompare(arg1, arg2: Mat4f): float32 =
-  for i in 0..3:
-    for j in 0..3:
-      result += abs(arg1[i,j] - arg2[i,j])
+suite "matrix transform":
+  ## this test ensures that mat_transform functions behave identical to
+  ## OpenGL functions, therefore it needs an OpenGL context
 
-block testTranslate:
-  mat1 = mat4f(1)
-    .translate(1,2,3)
+  setup:
+    var window: Window
+    var context: GLContext
 
-  glLoadIdentity()
-  glTranslatef(1,2,3)
+    discard sdl.init(INIT_EVERYTHING)
 
-  mat2 = getModelViewMatrix()
-  doAssert matrixCompare(mat1, mat2) < 1e-5
+    doAssert 0 == glSetAttribute(GL_CONTEXT_MAJOR_VERSION, 1)
+    doAssert 0 == glSetAttribute(GL_CONTEXT_MINOR_VERSION, 0)
 
-block testScale:
-  mat1 = mat4f(1)
-    .scale(4,5,6)
+    let posx: cint = WINDOWPOS_UNDEFINED
+    let posy: cint = WINDOWPOS_UNDEFINED
 
-  glLoadIdentity()
-  glScalef(4,5,6)
+    # we need an opengl context to compare the results, but we do not
+    # actually need to see the window, so it's hidden.
+    let flags: uint32 = sdl.WINDOW_HIDDEN or sdl.WINDOW_OPENGL
+    window = createWindow("window title", posx, posy, 640, 480, flags )
 
-  mat2 = getModelViewMatrix()
+    if window.isNil:
+      quit($sdl.getError())
 
-  doAssert matrixCompare(mat1, mat2) < 1e-5
+    context = window.glCreateContext()
+    if context.isNil:
+      quit($sdl.getError())
 
-block testRotate:
-  mat1 = mat4f(1)
-    .rotate(alpha, n.x, n.y, n.z)
+    #Initialize OpenGL
+    loadExtensions()
 
-  glMatrixMode(GL_MODELVIEW)
+    doAssert 0 == glMakeCurrent(window, context)
 
-  glLoadIdentity()
-  glRotatef(alpha * 180 / Pi, n.x, n.y, n.z)
+    glMatrixMode(GL_MODELVIEW)
 
-  glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
+    var alpha: float32 = 123
+    var n: Vec3f = vec3f(-7,8,-9).normalize
+    var mat1, mat2: Mat4f
 
-  doAssert matrixCompare(mat1, mat2) < 1e-5
+  test "translate":
+    mat1 = mat4f(1)
+      .translate(1,2,3)
 
-block testAll:
-  mat1 = mat4f(1)
-    .translate(1,2,3)
-    .scale(4,5,6)
-    .rotate(alpha, n.x, n.y, n.z)
+    glLoadIdentity()
+    glTranslatef(1,2,3)
 
-  glMatrixMode(GL_MODELVIEW)
+    mat2 = getModelViewMatrix()
+    check compare(mat1, mat2)
 
-  glLoadIdentity()
-  glTranslatef(1,2,3)
-  glScalef(4,5,6)
-  glRotatef(alpha * 180 / Pi, n.x, n.y, n.z)
+  test "scale":
+    mat1 = mat4f(1)
+      .scale(4,5,6)
 
-  glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
+    glLoadIdentity()
+    glScalef(4,5,6)
 
-  doAssert matrixCompare(mat1, mat2) < 1e-5
+    mat2 = getModelViewMatrix()
 
-block testAll2:
-  # tests a permutation of the matrix operations
-  mat1 = mat4f(1)
-    .rotate(alpha, n.x, n.y, n.z)
-    .scale(4,5,6)
-    .translate(1,2,3)
+    check compare(mat1, mat2)
 
-  glMatrixMode(GL_MODELVIEW)
+  test "rotate":
+    mat1 = mat4f(1)
+      .rotate(alpha, n.x, n.y, n.z)
 
-  glLoadIdentity()
-  glRotatef(alpha * 180 / Pi, n.x, n.y, n.z)
-  glScalef(4,5,6)
-  glTranslatef(1,2,3)
+    glMatrixMode(GL_MODELVIEW)
 
-  glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
+    glLoadIdentity()
+    glRotatef(alpha * 180 / Pi, n.x, n.y, n.z)
 
-  doAssert matrixCompare(mat1, mat2) < 1e-5
+    glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
+
+    check compare(mat1, mat2)
+
+  test "combined A":
+    mat1 = mat4f(1)
+      .translate(1,2,3)
+      .scale(4,5,6)
+      .rotate(alpha, n.x, n.y, n.z)
+
+    glMatrixMode(GL_MODELVIEW)
+
+    glLoadIdentity()
+    glTranslatef(1,2,3)
+    glScalef(4,5,6)
+    glRotatef(alpha * 180 / Pi, n.x, n.y, n.z)
+
+    glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
+
+    check compare(mat1, mat2)
+
+  test "combiend B":
+    ## tests a permutation of the matrix operations
+    mat1 = mat4f(1)
+      .rotate(alpha, n.x, n.y, n.z)
+      .scale(4,5,6)
+      .translate(1,2,3)
+
+    glMatrixMode(GL_MODELVIEW)
+
+    glLoadIdentity()
+    glRotatef(alpha * 180 / Pi, n.x, n.y, n.z)
+    glScalef(4,5,6)
+    glTranslatef(1,2,3)
+
+    glGetFloatv(GL_MODELVIEW_MATRIX, mat2[0,0].addr)
+
+    doAssert compare(mat1, mat2)
+
+  teardown:
+    sdl.gl_DeleteContext(context)
+    sdl.destroyWindow(window)
+    sdl.quit()

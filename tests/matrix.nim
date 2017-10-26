@@ -1,17 +1,18 @@
 import unittest
-import glm.mat
-import glm.vec
-import math
+import glm/mat
+import glm/vec
 
 proc compare*[N,M,T](a,b: Mat[N, M, T]): bool =
   for i in 0 ..< N:
     for j in 0 ..< M:
-      if abs(a[i][j]-b[i][j]) > 0.001: 
+      if abs(a[i][j]-b[i][j]) > 0.001:
         return false;
   return true
 
-suite "Matrix multiplication with major 4":
-  setup:
+
+suite "matrix multiplication":
+
+  test "mat4 * mat4":
     let p = mat4(vec4(7.89367, 1.10929, 1.67928, 6.69293),
             vec4(5.94461, 3.11095, 2.93005, 0.490001),
             vec4(7.85331, 4.76593, 5.86725, 7.40407),
@@ -25,13 +26,11 @@ suite "Matrix multiplication with major 4":
             vec4(92.2744, 36.9858, 45.0424, 78.3929),
             vec4(153.228, 60.187, 73.3607, 130.572));
 
-  test "mat4 * mat4":
     check(compare(pxq,p*q));
 
 
-    
-suite "Matrix multiplication with major 4":
-  setup:
+
+  test "mat4x3 * mat4":
     let p = mat4x3(vec3(0.39522, 5.39296, 7.81726),
             vec3(1.25305, 2.28293, 6.87896),
             vec3(8.04886, 2.79586, 5.38916),
@@ -46,11 +45,9 @@ suite "Matrix multiplication with major 4":
             vec3(49.5913, 72.577, 116.698));
 
 
-  test "mat4x3 * mat4":
     check(compare(pxq, p*q));
 
-suite "Matrix multiplication with major 4":
-  setup:
+  test "mat4x3 * mat3x4":
     let p = mat4x3(vec3(2.15555, 7.54407, 3.83892),
             vec3(3.32702, 9.99935, 8.16517),
             vec3(7.07694, 2.23305, 7.31887),
@@ -62,11 +59,9 @@ suite "Matrix multiplication with major 4":
             vec3(37.4443, 98.8226, 101.541),
             vec3(100.573, 192.111, 197.266));
 
-  test "mat4x3 * mat3x4":
     check(compare(pxq,p*q));
 
-suite "Matrix multiplication with major 4":
-  setup:
+  test "mat4x3 * mat2x4":
     let p = mat4x3(vec3(3.50671, 0.240651, 2.61703),
             vec3(8.07863, 8.86556, 8.29965),
             vec3(8.58817, 2.30592, 8.51875),
@@ -76,11 +71,9 @@ suite "Matrix multiplication with major 4":
     let pxq = mat2x3(vec3(85.7327, 90.3127, 125.04),
             vec3(112.234, 126.103, 141.709));
 
-  test "mat4x3 * mat2x4":
     check(compare(pxq,p*q));
 
-suite "Matrix multiplication with major 4":
-  setup:
+  test "mat4x2 * mat4":
     let p = mat4x2(vec2(2.91669, 6.91374),
             vec2(0.625142, 6.84815),
             vec2(0.16436, 2.94888),
@@ -94,11 +87,9 @@ suite "Matrix multiplication with major 4":
             vec2(32.5054, 116.852),
             vec2(33.6756, 84.1304));
 
-  test "mat4x2 * mat4":
     check(compare(pxq,p*q));
 
-suite "Matrix multiplication with major 4":
-  setup:
+  test "mat4x2 * mat3x4":
     let p = mat4x2(vec2(1.8357, 1.16728),
             vec2(1.46547, 8.71975),
             vec2(0.729659, 4.20488),
@@ -111,11 +102,9 @@ suite "Matrix multiplication with major 4":
             vec2(32.8611, 28.5512));
 
 
-  test "mat4x2 * mat3x4":
     check(compare(pxq,p*q));
 
-suite "Matrix multiplication with major 4":
-  setup:
+  test "mat4x2 * mat2x4":
     let p = mat4x2(vec2(2.63343, 1.16297),
             vec2(7.55765, 1.68212),
             vec2(3.34142, 4.10288),
@@ -125,11 +114,4 @@ suite "Matrix multiplication with major 4":
     let pxq = mat2x2(vec2(116.207, 47.8563),
             vec2(118.95, 60.0673));
 
-  test "mat4x2 * mat2x4":
     check(compare(pxq,p*q));
-
-
-
-
-
-
