@@ -154,22 +154,22 @@ proc `[]`*[N,T](v: var Vec[N,T]; ix: int): var T {.inline.} =
 # constructor functions #
 #########################
 
-proc vec4*[T](x,y,z,w:T)         : Vec4[T] {.inline.} = Vec4[T](arr: [  x,   y,   z,   w])
-proc vec4*[T](v:Vec3[T],w:T)     : Vec4[T] {.inline.} = Vec4[T](arr: [v.x, v.y, v.z,   w])
-proc vec4*[T](x:T,v:Vec3[T])     : Vec4[T] {.inline.} = Vec4[T](arr: [  x, v.x, v.y, v.z])
-proc vec4*[T](a,b:Vec2[T])       : Vec4[T] {.inline.} = Vec4[T](arr: [a.x, a.y, b.x, b.y])
-proc vec4*[T](v:Vec2[T],z,w:T)   : Vec4[T] {.inline.} = Vec4[T](arr: [v.x, v.y,   z,   w])
-proc vec4*[T](x:T,v:Vec2[T],w:T) : Vec4[T] {.inline.} = Vec4[T](arr: [  x, v.x, v.y,   w])
-proc vec4*[T](x,y:T,v:Vec2[T])   : Vec4[T] {.inline.} = Vec4[T](arr: [  x,   y, v.x, v.y])
-proc vec4*[T](x:T)               : Vec4[T] {.inline.} = Vec4[T](arr: [  x,   x,   x,   x])
+proc vec4*[T](x,y,z,w:T)         : Vec[4,T] {.inline.} = Vec[4,T](arr: [  x,   y,   z,   w])
+proc vec4*[T](v:Vec[3,T],w:T)     : Vec[4,T] {.inline.} = Vec[4,T](arr: [v.x, v.y, v.z,   w])
+proc vec4*[T](x:T,v:Vec[3,T])     : Vec[4,T] {.inline.} = Vec[4,T](arr: [  x, v.x, v.y, v.z])
+proc vec4*[T](a,b:Vec[2,T])       : Vec[4,T] {.inline.} = Vec[4,T](arr: [a.x, a.y, b.x, b.y])
+proc vec4*[T](v:Vec[2,T],z,w:T)   : Vec[4,T] {.inline.} = Vec[4,T](arr: [v.x, v.y,   z,   w])
+proc vec4*[T](x:T,v:Vec[2,T],w:T) : Vec[4,T] {.inline.} = Vec[4,T](arr: [  x, v.x, v.y,   w])
+proc vec4*[T](x,y:T,v:Vec[2,T])   : Vec[4,T] {.inline.} = Vec[4,T](arr: [  x,   y, v.x, v.y])
+proc vec4*[T](x:T)               : Vec[4,T] {.inline.} = Vec[4,T](arr: [  x,   x,   x,   x])
 
-proc vec3*[T](x,y,z: T)      : Vec3[T] {.inline.} = Vec3[T](arr: [  x,   y,   z])
-proc vec3*[T](v:Vec2[T],z:T) : Vec3[T] {.inline.} = Vec3[T](arr: [v.x, v.y,   z])
-proc vec3*[T](x:T,v:Vec2[T]) : Vec3[T] {.inline.} = Vec3[T](arr: [  x, v.x, v.y])
-proc vec3*[T](x:T)           : Vec3[T] {.inline.} = Vec3[T](arr: [  x,   x,   x])
+proc vec3*[T](x,y,z: T)      : Vec[3,T] {.inline.} = Vec[3,T](arr: [  x,   y,   z])
+proc vec3*[T](v:Vec[2,T],z:T) : Vec[3,T] {.inline.} = Vec[3,T](arr: [v.x, v.y,   z])
+proc vec3*[T](x:T,v:Vec[2,T]) : Vec[3,T] {.inline.} = Vec[3,T](arr: [  x, v.x, v.y])
+proc vec3*[T](x:T)           : Vec[3,T] {.inline.} = Vec[3,T](arr: [  x,   x,   x])
 
-proc vec2*[T](x,y:T) : Vec2[T] {.inline.} = Vec2[T](arr: [x,y])
-proc vec2*[T](x:T)   : Vec2[T] {.inline.} = Vec2[T](arr: [x,x])
+proc vec2*[T](x,y:T) : Vec[2,T] {.inline.} = Vec[2,T](arr: [x,y])
+proc vec2*[T](x:T)   : Vec[2,T] {.inline.} = Vec[2,T](arr: [x,x])
 
 proc subVec[N,T](v: var Vec[N,T]; offset, length: static[int]): var Vec[length,T] {.inline.} =
   cast[ptr Vec[length, T]](v.arr[offset].addr)[]
