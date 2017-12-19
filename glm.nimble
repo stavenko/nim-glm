@@ -1,6 +1,6 @@
 #[ Package ]#
 
-version       = "1.0.1"
+version       = "1.0.2"
 author        = "Arne Döring"
 description   = "Nim port of the OpenGL Mathematics (GLM) library"
 license       = "MIT"
