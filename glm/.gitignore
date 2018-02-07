@@ -3,3 +3,5 @@ mat
 mat_transform
 quat
 vec
+detail
+noise
