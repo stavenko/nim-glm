@@ -1,7 +1,10 @@
 
 import vec
 
-proc mod289*[T](x: T): T =
+proc mod289*[T: SomeReal](x: T): T =
+  return x - floor(x * T(1.0) / T(289.0)) * T(289.0);
+
+proc mod289*[N, T](x: Vec[N,T]): Vec[N,T] =
   return x - floor(x * T(1.0) / T(289.0)) * T(289.0);
 
 proc permute*[T](x: T): T =
