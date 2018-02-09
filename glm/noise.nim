@@ -6,6 +6,9 @@ import detail, vec
 # Following Stefan Gustavson's paper "Simplex noise demystified":
 # http://www.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
 
+
+proc vec4[T](v: Vec4b)          : Vec4[T] {.inline.} = Vec4[T](arr: [T(v.x), T(v.y), T(v.z), T(v.w)])
+
 proc gtc_grad4[T](j: T; ip: Vec4[T]): Vec4[T] =
   var pXYZ: Vec3[T] = floor(fract(vec3(j) * ip.xyz) * T(7)) * ip[2] - T(1);
   let pW: T = T(1.5) - dot(abs(pXYZ), vec3[T](1));
@@ -718,52 +721,57 @@ proc simplex*[T](v: Vec4[T]): T =
     dot(m1 * m1, vec2[T](dot(p3, x3), dot(p4, x4))));
 
 
-
-
 when isMainModule:
-
-  let p2f = vec2f(1.1f, 1.2f)
-  let p3f = vec3f(1.1f, 1.2f, 1.3f)
-  let p4f = vec4f(1.1f, 1.2f, 1.3f, 1.4f)
-  let p2d = vec2d(1.1d, 1.2d)
-  let p3d = vec3d(1.1d, 1.2d, 1.3d)
-  let p4d = vec4d(1.1d, 1.2d, 1.3d, 1.4d)
-
-
-  echo perlin(p2f)
-  echo perlin(p3f)
-  echo perlin(p4f)
-  echo perlin(p2d)
-  echo perlin(p3d)
-  echo perlin(p4d)
-  echo perlin(p2f, p2f)
-  echo perlin(p3f, p3f)
-  echo perlin(p4f, p4f)
-  echo perlin(p2d, p2d)
-  echo perlin(p3d, p3d)
-  echo perlin(p4d, p4d)
-  echo simplex(p2f)
-  echo simplex(p3f)
-  echo simplex(p4f)
-  echo simplex(p2d)
-  echo simplex(p3d)
-  echo simplex(p4d)
-
   var line = newStringOfCap(80)
 
-  var h: float32 = -Inf
-  var l: float32 = Inf
+  import typetraits
 
-  for y in 0 ..< 40:
-    for x in 0 ..< 80:
-      let n = perlin(vec2f(x.float32, y.float32) * 0.1)
-      h = max(h, n)
-      l = min(l, n)
+  proc drawNoise[T : SomeReal](applyNoise: proc(x,y: T): T): void =
+    var h: T = -Inf
+    var l: T = Inf
 
-      let i = int(floor((n + 1) * 5))
-      line.add "  .:+=*%#@"[i]
-    echo line
-    line.setLen(0)
+    for y in 0 ..< 40:
+      for x in 0 ..< 80:
+        let n = applyNoise(T(x) * T(0.1), T(y) * T(0.1))
+        h = max(h, n)
+        l = min(l, n)
 
-  echo h
-  echo l
+        let i = int(floor((n + 1) * 5))
+        line.add "  .:+=*%#@"[i]
+      echo line
+      line.setLen(0)
+
+    echo "min: ", l, " max: ", h
+
+  proc drawNoise[T](typ: typedesc[T]): void =
+    echo "testing type: ", typ.name
+
+    drawNoise do (x,y: T) -> T:
+      perlin(vec2f(x, y))
+
+    drawNoise do (x,y: T) -> T:
+      perlin(vec3f(x, y, (x*y) * T(0.5)))
+
+    drawNoise do (x,y: T) -> T:
+      perlin(vec4f(x, y, (x*y) * T(0.5), (x + y)))
+
+    drawNoise do (x,y: T) -> T:
+      perlin(vec2f(x, y), vec2f(4))
+
+    drawNoise do (x,y: T) -> T:
+      perlin(vec3f(x, y, T(0.5)), vec3f(4))
+
+    drawNoise do (x,y: T) -> T:
+      perlin(vec4f(x, y, T(0.5), T(0.5)), vec4f(4))
+
+    drawNoise do (x,y: T) -> T:
+      simplex(vec2f(x, y))
+
+    drawNoise do (x,y: T) -> T:
+      simplex(vec3f(x, y, (x*y) * T(0.5)))
+
+    drawNoise do (x,y: T) -> T:
+      simplex(vec4f(x, y, (x*y) * T(0.5), (x + y)))
+
+  drawNoise(float32)
+  drawNoise(float64)
