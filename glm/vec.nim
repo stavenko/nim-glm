@@ -12,13 +12,14 @@ proc `/=`(a: var SomeInteger; b: SomeInteger): void =
 
 ##Vector module contains all types and functions to manipulate vectors
 type
-  Vec*[N : static[int], T] = object
+  VectorElementType = SomeNumber | bool
+  Vec*[N : static[int], T: VectorElementType] = object
     arr*: array[N, T]
 
 type
-  Vec4*[T] = Vec[4,T]
-  Vec3*[T] = Vec[3,T]
-  Vec2*[T] = Vec[2,T]
+  Vec4*[T: VectorElementType] = Vec[4,T]
+  Vec3*[T: VectorElementType] = Vec[3,T]
+  Vec2*[T: VectorElementType] = Vec[2,T]
 
 type
   Vec4f*  = Vec[4, float32]
