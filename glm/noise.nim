@@ -1,11 +1,11 @@
 
 import detail, vec
+export vec
 
 # Based on the work of Stefan Gustavson and Ashima Arts on "webgl-noise":
 # https://github.com/ashima/webgl-noise
 # Following Stefan Gustavson's paper "Simplex noise demystified":
 # http://www.itn.liu.se/~stegu/simplexnoise/simplexnoise.pdf
-
 
 proc vec4[T](v: Vec4b)          : Vec4[T] {.inline.} = Vec4[T](arr: [T(v.x), T(v.y), T(v.z), T(v.w)])
 
@@ -559,7 +559,13 @@ proc simplex*[T](v: Vec2[T]): T =
   g.z = a0.z * x12.z + h.z * x12.w;
   return T(130) * dot(m, g);
 
+
+import macros
+
 proc simplex*[T](v: Vec3[T]): T =
+  when T is float64:
+    {.warning: "simplex with argument of type Vec3d is broken".}
+
 
   const
     C = vec2[T](1.0 / 6.0, 1.0 / 3.0)
@@ -592,8 +598,8 @@ proc simplex*[T](v: Vec3[T]): T =
 
   # Gradients: 7x7 points over a square, mapped onto an octahedron.
   # The ring size 17*17 = 289 is close to a multiple of 49 (49*6 = 294)
-  let n = T(0.142857142857); # 1.0/7.0
-  let ns: Vec3[T] = n * vec3[T](D.w, D.y, D.z) - vec3[T](D.x, D.z, D.x);
+  const n: T = 0.142857142857; # 1.0/7.0
+  let ns: Vec3[T] = n * D.wyz - D.xzx
 
   let j: Vec4[T] = p - T(49) * floor(p * ns.z * ns.z)  #  fmod(p,7*7)
 
@@ -604,8 +610,8 @@ proc simplex*[T](v: Vec3[T]): T =
   let y: Vec4[T] = y_u * ns.x + ns.y
   let h: Vec4[T] = T(1) - abs(x) - abs(y)
 
-  let b0 = vec4[T](x.x, x.y, y.x, y.y);
-  let b1 = vec4[T](x.z, x.w, y.z, y.w);
+  let b0: Vec4[T] = vec4(x.xy, y.xy);
+  let b1: Vec4[T] = vec4(x.zw, y.zw);
 
   # vec4 s0 = vec4(lessThan(b0,0.0))*2.0 - 1.0;
   # vec4 s1 = vec4(lessThan(b1,0.0))*2.0 - 1.0;
@@ -613,8 +619,8 @@ proc simplex*[T](v: Vec3[T]): T =
   let s1: Vec4[T] = floor(b1) * T(2) + T(1)
   let sh: Vec4[T] = -step(h, vec4[T](0.0))
 
-  let a0: Vec4[T] = vec4[T](b0.x, b0.z, b0.y, b0.w) + vec4[T](s0.x, s0.z, s0.y, s0.w) * vec4[T](sh.x, sh.x, sh.y, sh.y);
-  let a1: Vec4[T] = vec4[T](b1.x, b1.z, b1.y, b1.w) + vec4[T](s1.x, s1.z, s1.y, s1.w) * vec4[T](sh.z, sh.z, sh.w, sh.w);
+  let a0: Vec4[T] = b0.xzyw + s0.xzyw * sh.xxyy
+  let a1: Vec4[T] = b1.xzyw + s1.xzyw * sh.zzww
 
   var p0 = vec3[T](a0.x, a0.y, h.x);
   var p1 = vec3[T](a0.z, a0.w, h.y);
@@ -736,7 +742,9 @@ when isMainModule:
         h = max(h, n)
         l = min(l, n)
 
-        let i = int(floor((n + 1) * 5))
+        # clamp is only needed, because `simplex(Vec3d)` is
+        # broken. `simplex(Vec3f)` works flawlessly.
+        let i = int(clamp((n + 1) * 5,0,9))
         line.add "  .:+=*%#@"[i]
       echo line
       line.setLen(0)
@@ -747,31 +755,31 @@ when isMainModule:
     echo "testing type: ", typ.name
 
     drawNoise do (x,y: T) -> T:
-      perlin(vec2f(x, y))
+      perlin(vec2[T](x, y))
 
     drawNoise do (x,y: T) -> T:
-      perlin(vec3f(x, y, (x*y) * T(0.5)))
+      perlin(vec3[T](x, y, (x*y) * T(0.5)))
 
     drawNoise do (x,y: T) -> T:
-      perlin(vec4f(x, y, (x*y) * T(0.5), (x + y)))
+      perlin(vec4[T](x, y, (x*y) * T(0.5), (x + y)))
 
     drawNoise do (x,y: T) -> T:
-      perlin(vec2f(x, y), vec2f(4))
+      perlin(vec2[T](x, y), vec2[T](4))
 
     drawNoise do (x,y: T) -> T:
-      perlin(vec3f(x, y, T(0.5)), vec3f(4))
+      perlin(vec3[T](x, y, T(0.5)), vec3[T](4))
 
     drawNoise do (x,y: T) -> T:
-      perlin(vec4f(x, y, T(0.5), T(0.5)), vec4f(4))
+      perlin(vec4[T](x, y, T(0.5), T(0.5)), vec4[T](4))
 
     drawNoise do (x,y: T) -> T:
-      simplex(vec2f(x, y))
+      simplex(vec2[T](x, y))
 
     drawNoise do (x,y: T) -> T:
-      simplex(vec3f(x, y, (x*y) * T(0.5)))
+      simplex(vec3[T](x, y, (x*y) * T(0.5)))
 
     drawNoise do (x,y: T) -> T:
-      simplex(vec4f(x, y, (x*y) * T(0.5), (x + y)))
+      simplex(vec4[T](x, y, (x*y) * T(0.5), (x + y)))
 
   drawNoise(float32)
   drawNoise(float64)
