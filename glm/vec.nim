@@ -411,16 +411,19 @@ proc mix*[N,T](v1,v2,a: Vec[N,T]): Vec[N,T] =
   # untested
   v1 * (1 - a) + v2 * a
 
-proc fmod*(x,y: SomeReal): SomeReal =
-  y * fract(x / y)
+proc modulo*(x,y: SomeReal): SomeReal =
+  ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
+  x - y * floor(x / y)
 
-proc fmod*[N,T](v1,v2: Vec[N,T]): Vec[N,T] =
-  # untested
-  v2 * fract(v1 / v2)
+proc modulo*[N: static[int]; T: SomeReal](x,y: Vec[N,T]): Vec[N,T] =
+  ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
+  x - y * floor(x / y)
 
-proc fmod*[N,T](v: Vec[N,T]; val: T): Vec[N,T] =
-  # untested
-  val * fract(v / val)
+proc modulo*[N: static[int]; T: SomeReal](x: Vec[N,T]; y: T): Vec[N,T] =
+  ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
+  x - y * floor(x / y)
+
+{.deprecated: [fmod: modulo].}
 
 proc sign*[T](x: T): T =
   T(x > 0) - T(x < 0)
