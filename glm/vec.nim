@@ -102,6 +102,7 @@ mathPerComponent(`-`)
 mathPerComponent(`/`)
 mathPerComponent(`*`)
 mathPerComponent(`div`)
+mathPerComponent(`mod`)
 
 template mathInpl(opName): untyped =
   proc opName*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
