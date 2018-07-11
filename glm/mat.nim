@@ -154,6 +154,10 @@ proc diag*[N,T](v : Vec[N,T]): Mat[N,N,T] =
   for i in 0 ..< N:
     result.arr[i].arr[i] = v.arr[i]
 
+proc `diag=`*[N,T](m: var Mat[N,N,T], v : Vec[N,T]) =
+  for i in 0 ..< N:
+    m.arr[i].arr[i] = v.arr[i]
+
 ####################
 # type constructor #
 ####################
