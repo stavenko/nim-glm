@@ -91,6 +91,21 @@ proc scale*[T](m:Mat4[T], s: T): Mat4[T] {.inline.} =
   result = m
   result.scaleInpl(s)
 
+## DECOMPOSE
+proc pos*[T](m: Mat4[T]): var Vec3[T] =
+  m.row(0).xyz
+proc `pos=`*[T](m: var Mat4[T], val: Vec3[T]) =
+  m.row0 = vec4f(val,1)
+proc scale*[T](m: Mat4[T]): var Vec3[T] =
+  m.diag.xyz
+proc scale*[T](m: var Mat4[T], val: Vec3[T]) =
+  m.diag = vec4f(val,1)
+proc rot*[T](m: Mat4[T]): var Quat =
+  quat4[T](m)
+proc `rot=`*[T](m: var Mat4[T], val: Quat) =
+  m = mat4[T]().transform(m.pos).scale(m.scale).rotate(val)
+##TODO: SKEW, PERSPECTIVE
+
 proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
   ## Define a picking region
   assert(delta.x > T(0) and delta.y > T(0))
