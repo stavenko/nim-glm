@@ -154,6 +154,9 @@ proc diag*[N,T](v : Vec[N,T]): Mat[N,N,T] =
   for i in 0 ..< N:
     result.arr[i].arr[i] = v.arr[i]
 
+proc ident[M,N,T](_:type Mat[M,N,T]):Mat[M,N,T]=
+  for i in 0 ..< N:
+    result.arr[i].arr[i] = T(1)
 ####################
 # type constructor #
 ####################
