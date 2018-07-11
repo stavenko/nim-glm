@@ -38,27 +38,17 @@ proc `$`*[T](q : Quat[T]) : string =
       result &= ", "
     result &= $val
   result &= ")"
-
-proc x*[T](q : Quat[T]) : T = q.arr[0]
-proc y*[T](q : Quat[T]) : T = q.arr[1]
-proc z*[T](q : Quat[T]) : T = q.arr[2]
-proc w*[T](q : Quat[T]) : T = q.arr[3]
-proc x*[T](q : var Quat[T]) : var T = q.arr[0]
-proc y*[T](q : var Quat[T]) : var T = q.arr[1]
-proc z*[T](q : var Quat[T]) : var T = q.arr[2]
-proc w*[T](q : var Quat[T]) : var T = q.arr[3]
-
-proc `x=`*[T](q : var Quat[T]; v: T) : void =
-  q[0] = v
-
-proc `y=`*[T](q : var Quat[T]; v: T) : void =
-  q[1] = v
-
-proc `z=`*[T](q : var Quat[T]; v: T) : void =
-  q[2] = v
-
-proc `w=`*[T](q : var Quat[T]; v: T) : void =
-  q[3] = v
+template genProp(U:untyped,N:typed):untyped=
+  proc U*[T](q : Quat[T]) : T {.inject.} = 
+    q.arr[N]
+  proc U*[T](q : var Quat[T]) : var T {.inject.} = 
+    q.arr[N]
+  proc `U=`*[T](q : var Quat[T]; v: T) : void {.inject.} = 
+    q[N] = v
+genProp x, 0
+genProp y, 1
+genProp z, 2
+genProp w, 3
 
 proc quat*[T](x,y,z,w : T) : Quat[T] {.inline.} =
   ## warning unlike original glm, this constructor does have ``w`` as
@@ -329,21 +319,19 @@ proc quat*[T](u,v: Vec3[T]): Quat[T] =
   let q = quat(LocalW.x, LocalW.y, LocalW.z, T(1) + Dot)
   normalize(q)
 
-type
-  Quatf* = Quat[float32]
-  Quatd* = Quat[float64]
+template quatGen(U:untyped,V:typed):untyped=
+  type
+    `Quat U`* {.inject.} = Quat[V]
+  proc `quat U`*(x,y,z,w : V) : `Quat U` {.inject, inline.} =  `Quat U`(arr: [x,y,z,w])
+  proc `quat U`*(axis: `Vec3 U`; angle: V): `Quat U` {.inject.} = quat[V](axis,angle)
+  proc `quat U`*(u,v: `Vec3 U`): `Quat U` {.inject.} = quat(u,v)
+  proc `quat U`*(mat: `Mat3 U`): `Quat U` {.inject.} = quat[V](mat)
+  proc `quat U`*(): `Quat U` {.inject.} = `Quat U`(arr: [V(0.0),0,0,1])
+  
 
-proc quatf*(x,y,z,w : float32) : Quatf {.inline.} =  Quatf(arr: [x,y,z,w])
-proc quatf*(axis: Vec3f; angle: float32): Quatf = quat[float32](axis,angle)
-proc quatf*(u,v: Vec3f): Quatf = quat(u,v)
-proc quatf*(mat: Mat3f): Quatf = quat[float32](mat)
-proc quatf*(): Quatf = Quatf(arr: [0.0f,0,0,1])
+quatGen f, float32
+quatGen d, float64
 
-proc quatd*(x,y,z,w : float64) : Quatd {.inline.} =  Quatd(arr: [x,y,z,w])
-proc quatd*(axis: Vec3d; angle: float64): Quatd = quat[float64](axis,angle)
-proc quatd*(u,v: Vec3d): Quatd = quat(u,v)
-proc quatd*(mat: Mat3d): Quatd = quat[float64](mat)
-proc quatd*(): Quatd = Quatd(arr: [0.0d,0,0,1])
 
 #[
 proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
