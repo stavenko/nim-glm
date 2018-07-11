@@ -492,7 +492,7 @@ proc refract*[N,T](i,n: Vec[N,T]; eta: T): Vec[N,T] =
 type
   Vec4u8* = Vec[4, uint8]
 
-template vecGen(U:untyped,V:typed):untyped=
+template vecGen(U:untyped,V:typed):typed=
   ## ``U`` suffix
   ## ``V`` valType
   ##
@@ -500,31 +500,31 @@ template vecGen(U:untyped,V:typed):untyped=
     `Vec4 U`* {.inject.} = Vec[4, V]
     `Vec3 U`* {.inject.} = Vec[3, V]
     `Vec2 U`* {.inject.} = Vec[2, V]
-  proc `vec4 U`*(x,y,z,w:V) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   y,   z,   w])
-  proc `vec4 U`*(v:`Vec3 U`,w:V) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [v.x, v.y, v.z,   w])
-  proc `vec4 U`*(x:V,v:`Vec3 U`) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x, v.x, v.y, v.z])
-  proc `vec4 U`*(a,b:`Vec2 U`) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [a.x, a.y, b.x, b.y])
-  proc `vec4 U`*(v:`Vec2 U`,z,w:V) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [v.x, v.y,   z,   w])
-  proc `vec4 U`*(x:V,v:`Vec2 U`,w:V) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x, v.x, v.y,   w])
-  proc `vec4 U`*(x,y:V,v:`Vec2 U`) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   y, v.x, v.y])
-  proc `vec4 U`*(x:V) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   x,   x,   x])
+  proc `vec4 U`*(x, y, z, w: V)          : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   y,   z,   w])
+  proc `vec4 U`*(v: `Vec3 U`, w: V)      : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [v.x, v.y, v.z,   w])
+  proc `vec4 U`*(x: V, v: `Vec3 U`)      : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x, v.x, v.y, v.z])
+  proc `vec4 U`*(a, b: `Vec2 U`)         : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [a.x, a.y, b.x, b.y])
+  proc `vec4 U`*(v: `Vec2 U`, z, w: V)   : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [v.x, v.y,   z,   w])
+  proc `vec4 U`*(x: V, v: `Vec2 U`, w: V): `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x, v.x, v.y,   w])
+  proc `vec4 U`*(x, y: V, v: `Vec2 U`)   : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   y, v.x, v.y])
+  proc `vec4 U`*(x: V)                   : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   x,   x,   x])
 
-  proc `vec3 U`*(x,y,z:   V)  : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x,   y,   z])
-  proc `vec3 U`*(v:`Vec2 U`,z:V) : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [v.x, v.y,   z])
-  proc `vec3 U`*(x:V,v:`Vec2 U`) : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x, v.x, v.y])
-  proc `vec3 U`*(x:V)         : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x,   x,   x])
+  proc `vec3 U`*(x, y, z: V)       : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x,   y,   z])
+  proc `vec3 U`*(v: `Vec2 U`, z: V): `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [v.x, v.y,   z])
+  proc `vec3 U`*(x: V, v: `Vec2 U`): `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x, v.x, v.y])
+  proc `vec3 U`*(x: V)             : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x,   x,   x])
 
-  proc `vec2 U`*(x,y:V) : `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [x,y])
-  proc `vec2 U`*(x:V)   : `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [x,x])
+  proc `vec2 U`*(x, y: V): `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [x,y])
+  proc `vec2 U`*(x: V)   : `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [x,x])
 
-  proc `vec4 U`*(a:array[0..3, V]) : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [a[0], a[1], a[2], a[3]])
-  proc `vec3 U`*(a:array[0..2, V]) : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [a[0], a[1], a[2]])
-  proc `vec2 U`*(a:array[0..1, V]) : `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [a[0], a[1]])
+  proc `vec4 U`*(a: array[0..3, V]): `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [a[0], a[1], a[2], a[3]])
+  proc `vec3 U`*(a: array[0..2, V]): `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [a[0], a[1], a[2]])
+  proc `vec2 U`*(a: array[0..1, V]): `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [a[0], a[1]])
 
   ## conversions
-  proc  `vec4 U`*[T]  (v : Vec[4, T]) : `Vec4 U`  {.inline.} = `Vec4 U`(  arr: [v.x.V, v.y.V, v.z.V, v.w.V])
-  proc  `vec3 U`*[T]  (v : Vec[3, T]) : `Vec3 U`  {.inline.} = `Vec3 U`(  arr: [v.x.V, v.y.V, v.z.V])
-  proc  `vec2 U`*[T]  (v : Vec[2, T]) : `Vec2 U`  {.inline.} = `Vec2 U`(  arr: [v.x.V, v.y.V])
+  proc  `vec4 U`*[T](v: Vec[4, T]): `Vec4 U`  {.inline.} = `Vec4 U`(  arr: [V(v.x), V(v.y), V(v.z), V(v.w)])
+  proc  `vec3 U`*[T](v: Vec[3, T]): `Vec3 U`  {.inline.} = `Vec3 U`(  arr: [V(v.x), V(v.y), V(v.z)])
+  proc  `vec2 U`*[T](v: Vec[2, T]): `Vec2 U`  {.inline.} = `Vec2 U`(  arr: [V(v.x), V(v.y)])
 
 vecGen f, float32
 vecGen d, float64
