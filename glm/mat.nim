@@ -13,19 +13,19 @@ proc `$`*(m: Mat): string =
   result = ""
   for row in 0 ..< m.N:
     if row == 0:
-      result &= "Mat[$#,$#,$#](arr: [\n" % [$m.M,$m.N,m.T.name]
-    # else:
-    result &= "  Vec[$#,$#](arr: [" % [$m.N,m.T.name]
+      result &= "||"#"Mat[$#,$#,$#](arr: [\n" % [$m.M,$m.N,m.T.name]
+    else:
+      result &= " |" #"  Vec[$#,$#](arr: [" % [$m.N,m.T.name]
 
     for col in 0 ..< m.M:
       if col != 0:
-        result &= ", "
+        result &= "  "
       result &= cols[col][row]
 
     if row == m.N - 1:
-      result &= "])])\n"
+      result &= "||\n"#"])])\n"
     else:
-      result &= "]),\n"
+      result &= "|\n"#"]),\n"
 
 proc `[]=`*[M,N,T](v:var Mat[M,N,T]; ix:int; c:Vec[N,T]): void {.inline.} =
     v.arr[ix] = c
