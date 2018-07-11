@@ -1,6 +1,7 @@
 import globals
 import mat
 import vec
+import quat
 
 proc translateInpl*[T](m:var Mat4[T]; v:Vec3[T]): void {.inline.} =
   m[3] = m * vec4(v,1)
@@ -101,7 +102,7 @@ proc scale*[T](m: Mat4[T]): var Vec3[T] =
 proc scale*[T](m: var Mat4[T], val: Vec3[T]) =
   m.diag = vec4f(val,1)
 proc rot*[T](m: Mat4[T]): var Quat =
-  quat4[T](m)
+  quat[T](m)
 proc `rot=`*[T](m: var Mat4[T], val: Quat) =
   m = mat4[T]().transform(m.pos).scale(m.scale).rotate(val)
 ##TODO: SKEW, PERSPECTIVE
