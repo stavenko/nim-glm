@@ -163,6 +163,10 @@ proc diag*[N,T](v : Vec[N,T]): Mat[N,N,T] =
   for i in 0 ..< N:
     result.arr[i].arr[i] = v.arr[i]
 
+proc `diag=`*[N, M:static[int]; T; Q:static[int]](m: var Mat[N,M,T], v: Vec[Q, T] ) =
+  assert min(N,M)==Q # Don't know of a better way to do this.
+  for i in 0 ..< min(N,M):
+    m.arr[i].arr[i] = v.arr[i]
 ####################
 # type constructor #
 ####################
@@ -666,6 +670,31 @@ template numCols*[M,N,T](t : typedesc[Mat[M,N,T]]): int = M
 template numRows*[M,N,T](t : typedesc[Mat[M,N,T]]): int = N
 
 when isMainModule:
+  block:
+    proc test[N,M,T](m: Mat[N,M,T])=
+      var m = m
+      var vs = Vec[min(N,M),T]()
+      for i in 0..<min(N,M):
+        vs[i] = T(1)
+      echo "testing ``diag=``"
+      m.diag = vs
+      echo m
+      for i in 0..<min(M,N):
+        doAssert m.arr[i].arr[i] == T(1)
+    #square
+    var m = mat4d(0)
+    m.diag=vec4d(1,1,1,1)
+    test mat4d(0)
+    test mat2i(0)
+    test mat3f(0)
+    test Mat[10,10,bool]()
+    #non-square
+    test Mat4x3d()
+    test Mat3x2f()
+    test Mat[7,5,bool]()
+    test Mat2x4i() # long matrix
+    test Mat2x3f() # long matrix
+    test Mat[3,10,float]()
 
   var mats : array[2, Mat4f]
 
