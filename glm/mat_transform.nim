@@ -4,6 +4,7 @@ when defined(SomeReal) and not defined(SomeFloat):
 import globals
 import mat
 import vec
+import quat
 
 proc translateInpl*[T](m:var Mat4[T]; v:Vec3[T]): void {.inline.} =
   m[3] = m * vec4(v,1)
@@ -93,6 +94,21 @@ proc scale*[T](m:Mat4[T], x,y,z: T): Mat4[T] {.inline.} =
 proc scale*[T](m:Mat4[T], s: T): Mat4[T] {.inline.} =
   result = m
   result.scaleInpl(s)
+
+## DECOMPOSE
+proc pos*[T](m: Mat4[T]): Vec3[T] =
+  return m.row(3).xyz
+proc `pos=`*[T](m: var Mat4[T], val: Vec3[T]) =
+  m.row3= vec4f(val,m.row(3)[3])
+proc scale*[T](m: Mat4[T]): Vec3[T] =
+  return m.diag.xyz
+proc scale*[T](m: var Mat4[T], val: Vec3[T]) =
+  m.diag = vec4f(val,1)
+proc rot*[T](m: Mat4[T]): Quat =
+  return quat(m)
+proc `rot=`*[T](m: var Mat4[T], val: Quat) =
+  m = mat4[T]().transform(m.pos).scale(m.scale).rotate(val)
+##TODO: SKEW, PERSPECTIVE
 
 proc pickMatrix*[T](center, delta: Vec2[T]; viewport: Vec4[T]): Mat4[T] =
   ## Define a picking region
