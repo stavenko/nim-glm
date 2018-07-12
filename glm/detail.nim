@@ -1,7 +1,9 @@
+when defined(SomeReal) and not defined(SomeFloat):
+  type SomeFloat = SomeReal
 
 import vec
 
-proc mod289*[T: SomeReal](x: T): T =
+proc mod289*[T: SomeFloat](x: T): T =
   return x - floor(x * T(1.0) / T(289.0)) * T(289.0);
 
 proc mod289*[N, T](x: Vec[N,T]): Vec[N,T] =

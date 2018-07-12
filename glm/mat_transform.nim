@@ -1,3 +1,6 @@
+when defined(SomeReal) and not defined(SomeFloat):
+  type SomeFloat = SomeReal
+
 import globals
 import mat
 import vec

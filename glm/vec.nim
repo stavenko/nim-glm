@@ -1,3 +1,6 @@
+when defined(SomeReal) and not defined(SomeFloat):
+  type SomeFloat = SomeReal
+
 import macros, math
 
 export math.Pi
@@ -97,7 +100,7 @@ proc alignChar*[N,T](v: array[N, T]; c: char) : array[N,string] =
 proc columnFormat*[N,T](v: Vec[N, T]) : array[N,string] =
   when T is SomeInteger:
     result = v.arr.alignRight
-  elif T is SomeReal:
+  elif T is SomeFloat:
     result = v.arr.alignChar('.')
   else:
     result = v.arr.alignLeft
@@ -313,10 +316,10 @@ foreachImpl(sinh)
 foreachImpl(cosh)
 foreachImpl(tanh)
 
-proc radians*(v : SomeReal): SomeReal {.inline.} =
+proc radians*(v : SomeFloat): SomeFloat {.inline.} =
   v * math.Pi / 180
 
-proc degrees*(v : SomeReal): SomeReal {.inline.} =
+proc degrees*(v : SomeFloat): SomeFloat {.inline.} =
   v * 180 / math.Pi
 
 foreachImpl(radians)
@@ -330,8 +333,8 @@ export math.pow
 
 foreachZipImpl(pow)
 
-proc exp2*(x: SomeReal): SomeReal {.inline.} = math.pow(2,x)
-proc inversesqrt*(x: SomeReal): SomeReal {.inline.} = 1 / sqrt(x)
+proc exp2*(x: SomeFloat): SomeFloat {.inline.} = math.pow(2,x)
+proc inversesqrt*(x: SomeFloat): SomeFloat {.inline.} = 1 / sqrt(x)
 export math.exp, math.ln, math.log2, math.sqrt
 
 foreachImpl(exp2)
@@ -403,24 +406,24 @@ proc min*[N,T](val: T; v: Vec[N,T]): Vec[N,T] =
     result.arr[i] = min(val, v.arr[i])
 
 proc mix*[T: SomeNumber](x,y,a: T): T =
-  x * (1 - a) + y * a
+  x * (T(1) - a) + y * a
 
 proc mix*[N,T](v1,v2: Vec[N,T]; a: T): Vec[N,T] =
-  v1 * (1 - a) + v2 * a
+  v1 * (T(1) - a) + v2 * a
 
 proc mix*[N,T](v1,v2,a: Vec[N,T]): Vec[N,T] =
   # untested
-  v1 * (1 - a) + v2 * a
+  v1 * (T(1) - a) + v2 * a
 
-proc modulo*(x,y: SomeReal): SomeReal =
+proc modulo*(x,y: SomeFloat): SomeFloat =
   ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
   x - y * floor(x / y)
 
-proc modulo*[N: static[int]; T: SomeReal](x,y: Vec[N,T]): Vec[N,T] =
+proc modulo*[N: static[int]; T: SomeFloat](x,y: Vec[N,T]): Vec[N,T] =
   ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
   x - y * floor(x / y)
 
-proc modulo*[N: static[int]; T: SomeReal](x: Vec[N,T]; y: T): Vec[N,T] =
+proc modulo*[N: static[int]; T: SomeFloat](x: Vec[N,T]; y: T): Vec[N,T] =
   ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
   x - y * floor(x / y)
 
@@ -434,7 +437,7 @@ proc sign*[N,T](v: Vec[N,T]): Vec[N,T] =
   for i in 0 ..< N:
     result.arr[i] = sign(v.arr[i])
 
-proc smoothstep*(edge0,edge1,x: SomeReal): SomeReal =
+proc smoothstep*(edge0,edge1,x: SomeFloat): SomeFloat =
   ## performs smooth Hermite interpolation between 0 and 1 when edge0 < x < edge1.
   ## This is useful in cases where a threshold function with a smooth transition is desired
   # untested
