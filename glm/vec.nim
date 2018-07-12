@@ -415,19 +415,20 @@ proc mix*[N,T](v1,v2,a: Vec[N,T]): Vec[N,T] =
   # untested
   v1 * (T(1) - a) + v2 * a
 
-proc modulo*(x,y: SomeFloat): SomeFloat =
-  ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
+proc floorMod*(x,y: SomeFloat): SomeFloat =
+  ## `floorMod` returns the value of x modulo y. This is computed as x - y * floor(x/y).
   x - y * floor(x / y)
 
-proc modulo*[N: static[int]; T: SomeFloat](x,y: Vec[N,T]): Vec[N,T] =
-  ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
+proc floorMod*[N: static[int]; T: SomeFloat](x,y: Vec[N,T]): Vec[N,T] =
+  ## `floorMod` returns the value of x modulo y. This is computed as x - y * floor(x/y).
   x - y * floor(x / y)
 
-proc modulo*[N: static[int]; T: SomeFloat](x: Vec[N,T]; y: T): Vec[N,T] =
-  ## `modulo` returns the value of x modulo y. This is computed as x - y * floor(x/y).
+proc floorMod*[N: static[int]; T: SomeFloat](x: Vec[N,T]; y: T): Vec[N,T] =
+  ## `floorMod` returns the value of x modulo y. This is computed as x - y * floor(x/y).
   x - y * floor(x / y)
 
-{.deprecated: [fmod: modulo].}
+{.deprecated: [fmod: floorMod].}
+{.deprecated: [modulo: floorMod].}
 
 proc sign*[T](x: T): T =
   T(x > 0) - T(x < 0)

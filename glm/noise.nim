@@ -22,7 +22,7 @@ proc perlin*[T](Position: Vec2[T]): T =
   ## Clissic Perlin noise
   var Pi: Vec4[T]  = floor(vec4(Position.x, Position.y, Position.x, Position.y)) + vec4[T](0.0, 0.0, 1.0, 1.0);
   let Pf: Vec4[T] = fract(vec4(Position.x, Position.y, Position.x, Position.y)) - vec4[T](0.0, 0.0, 1.0, 1.0);
-  Pi = modulo(Pi, vec4[T](289)); # To avoid truncation effects in permutation
+  Pi = floorMod(Pi, vec4[T](289)); # To avoid truncation effects in permutation
   let ix = vec4(Pi.x, Pi.z, Pi.x, Pi.z);
   let iy = vec4(Pi.y, Pi.y, Pi.w, Pi.w);
   let fx = vec4(Pf.x, Pf.z, Pf.x, Pf.z);
@@ -131,8 +131,8 @@ proc perlin*[T](Position: Vec4[T]): T =
 
   var Pi0: Vec4[T] = floor(Position);  # Integer part for indexing
   var Pi1: Vec4[T] = Pi0 + T(1);    # Integer part + 1
-  Pi0 = modulo(Pi0, vec4[T](289));
-  Pi1 = modulo(Pi1, vec4[T](289));
+  Pi0 = floorMod(Pi0, vec4[T](289));
+  Pi1 = floorMod(Pi1, vec4[T](289));
   let Pf0: Vec4[T] = fract(Position);  # Fractional part for interpolation
   let Pf1: Vec4[T] = Pf0 - T(1);    # Fractional part - 1.0
   let ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
@@ -267,8 +267,8 @@ proc perlin*[T](Position: Vec2[T]; rep: Vec2[T]): T =
 
   var Pi: Vec4[T] = floor(vec4[T](Position.x, Position.y, Position.x, Position.y)) + vec4[T](0.0, 0.0, 1.0, 1.0);
   let Pf: Vec4[T] = fract(vec4[T](Position.x, Position.y, Position.x, Position.y)) - vec4[T](0.0, 0.0, 1.0, 1.0);
-  Pi = modulo(Pi, vec4[T](rep.x, rep.y, rep.x, rep.y)); # To create noise with explicit period
-  Pi = modulo(Pi, vec4[T](289)); # To avoid truncation effects in permutation
+  Pi = floorMod(Pi, vec4[T](rep.x, rep.y, rep.x, rep.y)); # To create noise with explicit period
+  Pi = floorMod(Pi, vec4[T](289)); # To avoid truncation effects in permutation
   let ix = vec4(Pi.x, Pi.z, Pi.x, Pi.z);
   let iy = vec4(Pi.y, Pi.y, Pi.w, Pi.w);
   let fx = vec4(Pf.x, Pf.z, Pf.x, Pf.z);
@@ -306,10 +306,10 @@ proc perlin*[T](Position: Vec2[T]; rep: Vec2[T]): T =
 proc perlin*[T](Position: Vec3[T]; rep: Vec3[T]): T =
   ## Classic Perlin noise, periodic variant
 
-  var Pi0: Vec3[T] = modulo(floor(Position), rep); # Integer part, modulo period
-  var Pi1: Vec3[T] = modulo(Pi0 + vec3[T](T(1)), rep); # Integer part + 1, mod period
-  Pi0 = modulo(Pi0, vec3[T](289));
-  Pi1 = modulo(Pi1, vec3[T](289));
+  var Pi0: Vec3[T] = floorMod(floor(Position), rep); # Integer part, modulo period
+  var Pi1: Vec3[T] = floorMod(Pi0 + vec3[T](T(1)), rep); # Integer part + 1, mod period
+  Pi0 = floorMod(Pi0, vec3[T](289));
+  Pi1 = floorMod(Pi1, vec3[T](289));
   let Pf0: Vec3[T] = fract(Position); # Fractional part for interpolation
   let Pf1: Vec3[T] = Pf0 - vec3[T](T(1)); # Fractional part - 1.0
   let ix: Vec4[T] = vec4[T](Pi0.x, Pi1.x, Pi0.x, Pi1.x);
@@ -375,8 +375,8 @@ proc perlin*[T](Position: Vec3[T]; rep: Vec3[T]): T =
 proc perlin*[T](Position: Vec4[T]; rep: Vec4[T]): T =
   ## Classic Perlin noise, periodic version
 
-  let Pi0: Vec4[T] = modulo(floor(Position), rep); # Integer part modulo rep
-  let Pi1: Vec4[T] = modulo(Pi0 + T(1), rep); # Integer part + 1 mod rep
+  let Pi0: Vec4[T] = floorMod(floor(Position), rep); # Integer part modulo rep
+  let Pi1: Vec4[T] = floorMod(Pi0 + T(1), rep); # Integer part + 1 mod rep
   let Pf0: Vec4[T] = fract(Position); # Fractional part for interpolation
   let Pf1: Vec4[T] = Pf0 - T(1); # Fractional part - 1.0
   let ix: Vec4[T] = vec4[T](Pi0.x, Pi1.x, Pi0.x, Pi1.x);
@@ -529,7 +529,7 @@ proc simplex*[T](v: Vec2[T]): T =
   x12 = vec4[T](x12.xy - i1, x12.z, x12.w);
 
   # Permutations
-  i = modulo(i, vec2[T](289)); # Avoid truncation effects in permutation
+  i = floorMod(i, vec2[T](289)); # Avoid truncation effects in permutation
   let p: Vec3[T] = detail.permute(
     detail.permute(i.y + vec3[T](T(0), i1.y, T(1))) +
     i.x + vec3[T](T(0), i1.x, T(1)));
@@ -693,7 +693,7 @@ proc simplex*[T](v: Vec4[T]): T =
   let x4: Vec4[T] = x0 + C.w;
 
   # Permutations
-  i = modulo(i, vec4[T](289));
+  i = floorMod(i, vec4[T](289));
   let j0: T = detail.permute(detail.permute(detail.permute(detail.permute(i.w) + i.z) + i.y) + i.x);
   let j1: Vec4[T] = detail.permute(detail.permute(detail.permute(detail.permute(
     i.w + vec4[T](i1.w, i2.w, i3.w, T(1))) +
