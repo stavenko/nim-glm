@@ -2,15 +2,30 @@ import unittest
 import glm/mat
 import glm/vec
 
-proc compare*[N,M,T](a,b: Mat[N, M, T]): bool =
-  for i in 0 ..< N:
-    for j in 0 ..< M:
-      if abs(a[i][j]-b[i][j]) > 0.001:
+proc compare*[M,N,T](a,b: Mat[M, N, T]): bool =
+  for i in 0 ..< M:
+    for j in 0 ..< N:
+      if abs(a[i][j]-b[i][j]) > 1e-3:
         return false;
   return true
 
 
 suite "matrix multiplication":
+
+  test "diag":
+    let m = mat3f(vec3f(1,2,3), vec3f(4,5,6), vec3f(7,8,9))
+    let d = diag(m)
+    check d == vec3f(1,5,9)
+    var m2 = m
+    m2.diag = vec3f(-1,-2,-3)
+    check m2[0,0] == -1'f32
+    check m2[1,1] == -2'f32
+    check m2[2,2] == -3'f32
+    let m3 = mat3f(vec3f(1,0,0), vec3f(0,5,0), vec3f(0,0,9))
+    check m.diag.diag == m3
+
+    let m4 = mat3x2(vec2f(1,2),vec2f(3,4),vec2f(5,6))
+    check m4.diag == vec2f(1,4)
 
   test "mat4 * mat4":
     let p = mat4(vec4(7.89367, 1.10929, 1.67928, 6.69293),
@@ -27,8 +42,6 @@ suite "matrix multiplication":
             vec4(153.228, 60.187, 73.3607, 130.572));
 
     check(compare(pxq,p*q));
-
-
 
   test "mat4x3 * mat4":
     let p = mat4x3(vec3(0.39522, 5.39296, 7.81726),
