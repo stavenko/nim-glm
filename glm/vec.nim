@@ -24,29 +24,6 @@ type
   Vec3*[T: VectorElementType] = Vec[3,T]
   Vec2*[T: VectorElementType] = Vec[2,T]
 
-type
-  Vec4f*  = Vec[4, float32]
-  Vec3f*  = Vec[3, float32]
-  Vec2f*  = Vec[2, float32]
-  Vec4d*  = Vec[4, float64]
-  Vec3d*  = Vec[3, float64]
-  Vec2d*  = Vec[2, float64]
-  Vec4i*  = Vec[4, int32]
-  Vec3i*  = Vec[3, int32]
-  Vec2i*  = Vec[2, int32]
-  Vec4l*  = Vec[4, int64]
-  Vec3l*  = Vec[3, int64]
-  Vec2l*  = Vec[2, int64]
-  Vec4ui*  = Vec[4, uint32]
-  Vec3ui*  = Vec[3, uint32]
-  Vec2ui*  = Vec[2, uint32]
-  Vec4ul*  = Vec[4, uint64]
-  Vec3ul*  = Vec[3, uint64]
-  Vec2ul*  = Vec[2, uint64]
-  Vec4b*  = Vec[4, bool]
-  Vec3b*  = Vec[3, bool]
-  Vec2b*  = Vec[2, bool]
-
 proc `$`*(v: Vec) : string =
   result = "["
   for i, val in v.arr:
@@ -515,174 +492,48 @@ proc refract*[N,T](i,n: Vec[N,T]; eta: T): Vec[N,T] =
 type
   Vec4u8* = Vec[4, uint8]
 
-proc vec4f*(x,y,z,w:float32)             : Vec4f {.inline.} = Vec4f(arr: [  x,   y,   z,   w])
-proc vec4f*(v:Vec3f,w:float32)           : Vec4f {.inline.} = Vec4f(arr: [v.x, v.y, v.z,   w])
-proc vec4f*(x:float32,v:Vec3f)           : Vec4f {.inline.} = Vec4f(arr: [  x, v.x, v.y, v.z])
-proc vec4f*(a,b:Vec2f)                   : Vec4f {.inline.} = Vec4f(arr: [a.x, a.y, b.x, b.y])
-proc vec4f*(v:Vec2f,z,w:float32)         : Vec4f {.inline.} = Vec4f(arr: [v.x, v.y,   z,   w])
-proc vec4f*(x:float32,v:Vec2f,w:float32) : Vec4f {.inline.} = Vec4f(arr: [  x, v.x, v.y,   w])
-proc vec4f*(x,y:float32,v:Vec2f)         : Vec4f {.inline.} = Vec4f(arr: [  x,   y, v.x, v.y])
-proc vec4f*(x:float32)                   : Vec4f {.inline.} = Vec4f(arr: [  x,   x,   x,   x])
+template vecGen(U:untyped,V:typed):typed=
+  ## ``U`` suffix
+  ## ``V`` valType
+  ##
+  type 
+    `Vec4 U`* {.inject.} = Vec[4, V]
+    `Vec3 U`* {.inject.} = Vec[3, V]
+    `Vec2 U`* {.inject.} = Vec[2, V]
+  proc `vec4 U`*(x, y, z, w: V)          : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   y,   z,   w])
+  proc `vec4 U`*(v: `Vec3 U`, w: V)      : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [v.x, v.y, v.z,   w])
+  proc `vec4 U`*(x: V, v: `Vec3 U`)      : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x, v.x, v.y, v.z])
+  proc `vec4 U`*(a, b: `Vec2 U`)         : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [a.x, a.y, b.x, b.y])
+  proc `vec4 U`*(v: `Vec2 U`, z, w: V)   : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [v.x, v.y,   z,   w])
+  proc `vec4 U`*(x: V, v: `Vec2 U`, w: V): `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x, v.x, v.y,   w])
+  proc `vec4 U`*(x, y: V, v: `Vec2 U`)   : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   y, v.x, v.y])
+  proc `vec4 U`*(x: V)                   : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   x,   x,   x])
 
-proc vec3f*(x,y,z:   float32)  : Vec3f {.inline.} = Vec3f(arr: [  x,   y,   z])
-proc vec3f*(v:Vec2f,z:float32) : Vec3f {.inline.} = Vec3f(arr: [v.x, v.y,   z])
-proc vec3f*(x:float32,v:Vec2f) : Vec3f {.inline.} = Vec3f(arr: [  x, v.x, v.y])
-proc vec3f*(x:float32)         : Vec3f {.inline.} = Vec3f(arr: [  x,   x,   x])
+  proc `vec3 U`*(x, y, z: V)       : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x,   y,   z])
+  proc `vec3 U`*(v: `Vec2 U`, z: V): `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [v.x, v.y,   z])
+  proc `vec3 U`*(x: V, v: `Vec2 U`): `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x, v.x, v.y])
+  proc `vec3 U`*(x: V)             : `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [  x,   x,   x])
 
-proc vec2f*(x,y:float32) : Vec2f {.inline.} = Vec2f(arr: [x,y])
-proc vec2f*(x:float32)   : Vec2f {.inline.} = Vec2f(arr: [x,x])
+  proc `vec2 U`*(x, y: V): `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [x,y])
+  proc `vec2 U`*(x: V)   : `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [x,x])
 
-proc vec4f*(a:array[0..3, float32]) : Vec4f {.inline.} = Vec4f(arr: [a[0], a[1], a[2], a[3]])
-proc vec3f*(a:array[0..2, float32]) : Vec3f {.inline.} = Vec3f(arr: [a[0], a[1], a[2]])
-proc vec2f*(a:array[0..1, float32]) : Vec2f {.inline.} = Vec2f(arr: [a[0], a[1]])
+  proc `vec4 U`*(a: array[0..3, V]): `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [a[0], a[1], a[2], a[3]])
+  proc `vec3 U`*(a: array[0..2, V]): `Vec3 U` {.inject, inline.} = `Vec3 U`(arr: [a[0], a[1], a[2]])
+  proc `vec2 U`*(a: array[0..1, V]): `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [a[0], a[1]])
 
-proc vec4d*(x,y,z,w:float64)             : Vec4d {.inline.} = Vec4d(arr: [  x,   y,   z,   w])
-proc vec4d*(v:Vec3d,w:float64)           : Vec4d {.inline.} = Vec4d(arr: [v.x, v.y, v.z,   w])
-proc vec4d*(x:float64,v:Vec3d)           : Vec4d {.inline.} = Vec4d(arr: [  x, v.x, v.y, v.z])
-proc vec4d*(a,b:Vec2d)                   : Vec4d {.inline.} = Vec4d(arr: [a.x, a.y, b.x, b.y])
-proc vec4d*(v:Vec2d,z,w:float64)         : Vec4d {.inline.} = Vec4d(arr: [v.x, v.y,   z,   w])
-proc vec4d*(x:float64,v:Vec2d,w:float64) : Vec4d {.inline.} = Vec4d(arr: [  x, v.x, v.y,   w])
-proc vec4d*(x,y:float64,v:Vec2d)         : Vec4d {.inline.} = Vec4d(arr: [  x,   y, v.x, v.y])
-proc vec4d*(x:float64)                   : Vec4d {.inline.} = Vec4d(arr: [  x,   x,   x,   x])
+  ## conversions
+  proc  `vec4 U`*[T](v: Vec[4, T]): `Vec4 U`  {.inline.} = `Vec4 U`(  arr: [V(v.x), V(v.y), V(v.z), V(v.w)])
+  proc  `vec3 U`*[T](v: Vec[3, T]): `Vec3 U`  {.inline.} = `Vec3 U`(  arr: [V(v.x), V(v.y), V(v.z)])
+  proc  `vec2 U`*[T](v: Vec[2, T]): `Vec2 U`  {.inline.} = `Vec2 U`(  arr: [V(v.x), V(v.y)])
 
-proc vec3d*(x,y,z:   float64)  : Vec3d {.inline.} = Vec3d(arr: [  x,   y,   z])
-proc vec3d*(v:Vec2d,z:float64) : Vec3d {.inline.} = Vec3d(arr: [v.x, v.y,   z])
-proc vec3d*(x:float64,v:Vec2d) : Vec3d {.inline.} = Vec3d(arr: [  x, v.x, v.y])
-proc vec3d*(x:float64)         : Vec3d {.inline.} = Vec3d(arr: [  x,   x,   x])
+vecGen f, float32
+vecGen d, float64
+vecGen i, int32
+vecGen l, int64
+vecGen ui, uint32
+vecGen ul, uint64
+vecGen b, bool
 
-proc vec2d*(x,y:float64) : Vec2d {.inline.} = Vec2d(arr: [x,y])
-proc vec2d*(x:float64)   : Vec2d {.inline.} = Vec2d(arr: [x,x])
-
-
-proc vec4i*(x,y,z,w:int32)             : Vec4i {.inline.} = Vec4i(arr: [  x,   y,   z,   w])
-proc vec4i*(v:Vec3i; w:int32)          : Vec4i {.inline.} = Vec4i(arr: [v.x, v.y, v.z,   w])
-proc vec4i*(x:int32; v:Vec3i)          : Vec4i {.inline.} = Vec4i(arr: [  x, v.x, v.y, v.z])
-proc vec4i*(a,b:Vec2i)                 : Vec4i {.inline.} = Vec4i(arr: [a.x, a.y, b.x, b.y])
-proc vec4i*(v:Vec2i; z,w:int32)        : Vec4i {.inline.} = Vec4i(arr: [v.x, v.y,   z,   w])
-proc vec4i*(x:int32; v:Vec2i; w:int32) : Vec4i {.inline.} = Vec4i(arr: [  x, v.x, v.y,   w])
-proc vec4i*(x,y:int32; v:Vec2i)        : Vec4i {.inline.} = Vec4i(arr: [  x,   y, v.x, v.y])
-proc vec4i*(x:int32)                   : Vec4i {.inline.} = Vec4i(arr: [  x,   x,   x,   x])
-
-proc vec3i*(x,y,z:int32)      : Vec3i {.inline.} = Vec3i(arr: [  x,   y,   z])
-proc vec3i*(v:Vec2i; z:int32) : Vec3i {.inline.} = Vec3i(arr: [v.x, v.y,   z])
-proc vec3i*(x:int32; v:Vec2i) : Vec3i {.inline.} = Vec3i(arr: [  x, v.x, v.y])
-proc vec3i*(x:int32)          : Vec3i {.inline.} = Vec3i(arr: [  x,   x,   x])
-
-proc vec2i*(x,y:int32) : Vec2i {.inline.} = Vec2i(arr: [x,y])
-proc vec2i*(x:int32)   : Vec2i {.inline.} = Vec2i(arr: [x,x])
-
-proc vec4i*(a:array[0..3, int32]) : Vec4i {.inline.} = Vec4i(arr: [a[0], a[1], a[2], a[3]])
-proc vec3i*(a:array[0..2, int32]) : Vec3i {.inline.} = Vec3i(arr: [a[0], a[1], a[2]])
-proc vec2i*(a:array[0..1, int32]) : Vec2i {.inline.} = Vec2i(arr: [a[0], a[1]])
-
-proc vec4l*(x,y,z,w:int64)             : Vec4l {.inline.} = Vec4l(arr: [  x,   y,   z,   w])
-proc vec4l*(v:Vec3l; w:int64)          : Vec4l {.inline.} = Vec4l(arr: [v.x, v.y, v.z,   w])
-proc vec4l*(x:int64; v:Vec3l)          : Vec4l {.inline.} = Vec4l(arr: [  x, v.x, v.y, v.z])
-proc vec4l*(a,b:Vec2l)                 : Vec4l {.inline.} = Vec4l(arr: [a.x, a.y, b.x, b.y])
-proc vec4l*(v:Vec2l; z,w:int64)        : Vec4l {.inline.} = Vec4l(arr: [v.x, v.y,   z,   w])
-proc vec4l*(x:int64; v:Vec2l; w:int64) : Vec4l {.inline.} = Vec4l(arr: [  x, v.x, v.y,   w])
-proc vec4l*(x,y:int64; v:Vec2l)        : Vec4l {.inline.} = Vec4l(arr: [  x,   y, v.x, v.y])
-proc vec4l*(x:int64)                   : Vec4l {.inline.} = Vec4l(arr: [  x,   x,   x,   x])
-
-proc vec3l*(x,y,z:int64)      : Vec3l {.inline.} = Vec3l(arr: [  x,   y,   z])
-proc vec3l*(v:Vec2l; z:int64) : Vec3l {.inline.} = Vec3l(arr: [v.x, v.y,   z])
-proc vec3l*(x:int64; v:Vec2l) : Vec3l {.inline.} = Vec3l(arr: [  x, v.x, v.y])
-proc vec3l*(x:int64)          : Vec3l {.inline.} = Vec3l(arr: [  x,   x,   x])
-
-proc vec2l*(x,y:int64) : Vec2l {.inline.} = Vec2l(arr: [x,y])
-proc vec2l*(x:int64)   : Vec2l {.inline.} = Vec2l(arr: [x,x])
-
-proc vec4l*(a:array[0..3, int64]) : Vec4l {.inline.} = Vec4l(arr: [a[0], a[1], a[2], a[3]])
-proc vec3l*(a:array[0..2, int64]) : Vec3l {.inline.} = Vec3l(arr: [a[0], a[1], a[2]])
-proc vec2l*(a:array[0..1, int64]) : Vec2l {.inline.} = Vec2l(arr: [a[0], a[1]])
-
-
-proc vec4ui*(x,y,z,w:uint32)             : Vec4ui {.inline.} = Vec4ui(arr: [  x,   y,   z,   w])
-proc vec4ui*(v:Vec3ui; w:uint32)          : Vec4ui {.inline.} = Vec4ui(arr: [v.x, v.y, v.z,   w])
-proc vec4ui*(x:uint32; v:Vec3ui)          : Vec4ui {.inline.} = Vec4ui(arr: [  x, v.x, v.y, v.z])
-proc vec4ui*(a,b:Vec2ui)                 : Vec4ui {.inline.} = Vec4ui(arr: [a.x, a.y, b.x, b.y])
-proc vec4ui*(v:Vec2ui; z,w:uint32)        : Vec4ui {.inline.} = Vec4ui(arr: [v.x, v.y,   z,   w])
-proc vec4ui*(x:uint32; v:Vec2ui; w:uint32) : Vec4ui {.inline.} = Vec4ui(arr: [  x, v.x, v.y,   w])
-proc vec4ui*(x,y:uint32; v:Vec2ui)        : Vec4ui {.inline.} = Vec4ui(arr: [  x,   y, v.x, v.y])
-proc vec4ui*(x:uint32)                   : Vec4ui {.inline.} = Vec4ui(arr: [  x,   x,   x,   x])
-
-proc vec3ui*(x,y,z:uint32)      : Vec3ui {.inline.} = Vec3ui(arr: [  x,   y,   z])
-proc vec3ui*(v:Vec2ui; z:uint32) : Vec3ui {.inline.} = Vec3ui(arr: [v.x, v.y,   z])
-proc vec3ui*(x:uint32; v:Vec2ui) : Vec3ui {.inline.} = Vec3ui(arr: [  x, v.x, v.y])
-proc vec3ui*(x:uint32)          : Vec3ui {.inline.} = Vec3ui(arr: [  x,   x,   x])
-
-proc vec2ui*(x,y:uint32) : Vec2ui {.inline.} = Vec2ui(arr: [x,y])
-proc vec2ui*(x:uint32)   : Vec2ui {.inline.} = Vec2ui(arr: [x,x])
-
-proc vec4ui*(a:array[0..3, uint32]) : Vec4ui {.inline.} = Vec4ui(arr: [a[0], a[1], a[2], a[3]])
-proc vec3ui*(a:array[0..2, uint32]) : Vec3ui {.inline.} = Vec3ui(arr: [a[0], a[1], a[2]])
-proc vec2ui*(a:array[0..1, uint32]) : Vec2ui {.inline.} = Vec2ui(arr: [a[0], a[1]])
-
-proc vec4ul*(x,y,z,w:uint64)             : Vec4ul {.inline.} = Vec4ul(arr: [  x,   y,   z,   w])
-proc vec4ul*(v:Vec3ul; w:uint64)          : Vec4ul {.inline.} = Vec4ul(arr: [v.x, v.y, v.z,   w])
-proc vec4ul*(x:uint64; v:Vec3ul)          : Vec4ul {.inline.} = Vec4ul(arr: [  x, v.x, v.y, v.z])
-proc vec4ul*(a,b:Vec2ul)                 : Vec4ul {.inline.} = Vec4ul(arr: [a.x, a.y, b.x, b.y])
-proc vec4ul*(v:Vec2ul; z,w:uint64)        : Vec4ul {.inline.} = Vec4ul(arr: [v.x, v.y,   z,   w])
-proc vec4ul*(x:uint64; v:Vec2ul; w:uint64) : Vec4ul {.inline.} = Vec4ul(arr: [  x, v.x, v.y,   w])
-proc vec4ul*(x,y:uint64; v:Vec2ul)        : Vec4ul {.inline.} = Vec4ul(arr: [  x,   y, v.x, v.y])
-proc vec4ul*(x:uint64)                   : Vec4ul {.inline.} = Vec4ul(arr: [  x,   x,   x,   x])
-
-proc vec3ul*(x,y,z:uint64)      : Vec3ul {.inline.} = Vec3ul(arr: [  x,   y,   z])
-proc vec3ul*(v:Vec2ul; z:uint64) : Vec3ul {.inline.} = Vec3ul(arr: [v.x, v.y,   z])
-proc vec3ul*(x:uint64; v:Vec2ul) : Vec3ul {.inline.} = Vec3ul(arr: [  x, v.x, v.y])
-proc vec3ul*(x:uint64)          : Vec3ul {.inline.} = Vec3ul(arr: [  x,   x,   x])
-
-proc vec2ul*(x,y:uint64) : Vec2ul {.inline.} = Vec2ul(arr: [x,y])
-proc vec2ul*(x:uint64)   : Vec2ul {.inline.} = Vec2ul(arr: [x,x])
-
-proc vec4ul*(a:array[0..3, uint64]) : Vec4ul {.inline.} = Vec4ul(arr: [a[0], a[1], a[2], a[3]])
-proc vec3ul*(a:array[0..2, uint64]) : Vec3ul {.inline.} = Vec3ul(arr: [a[0], a[1], a[2]])
-proc vec2ul*(a:array[0..1, uint64]) : Vec2ul {.inline.} = Vec2ul(arr: [a[0], a[1]])
-
-
-proc vec4b*(x,y,z,w:bool)            : Vec4b {.inline.} = Vec4b(arr: [  x,   y,   z,   w])
-proc vec4b*(v:Vec3b; w:bool)         : Vec4b {.inline.} = Vec4b(arr: [v.x, v.y, v.z,   w])
-proc vec4b*(x:bool; v:Vec3b)         : Vec4b {.inline.} = Vec4b(arr: [  x, v.x, v.y, v.z])
-proc vec4b*(a,b:Vec2b)               : Vec4b {.inline.} = Vec4b(arr: [a.x, a.y, b.x, b.y])
-proc vec4b*(v:Vec2b; z,w:bool)       : Vec4b {.inline.} = Vec4b(arr: [v.x, v.y,   z,   w])
-proc vec4b*(x:bool; v:Vec2b; w:bool) : Vec4b {.inline.} = Vec4b(arr: [  x, v.x, v.y,   w])
-proc vec4b*(x,y:bool; v:Vec2b)       : Vec4b {.inline.} = Vec4b(arr: [  x,   y, v.x, v.y])
-proc vec4b*(x:bool)                  : Vec4b {.inline.} = Vec4b(arr: [  x,   x,   x,   x])
-
-proc vec3b*(x,y,z:bool)      : Vec3b {.inline.} = Vec3b(arr: [  x,   y,   z])
-proc vec3b*(v:Vec2b; z:bool) : Vec3b {.inline.} = Vec3b(arr: [v.x, v.y,   z])
-proc vec3b*(x:bool; v:Vec2b) : Vec3b {.inline.} = Vec3b(arr: [  x, v.x, v.y])
-proc vec3b*(x:bool)          : Vec3b {.inline.} = Vec3b(arr: [  x,   x,   x])
-
-proc vec2b*(x,y:bool) : Vec2b {.inline.} = Vec2b(arr: [x,y])
-proc vec2b*(x:bool)   : Vec2b {.inline.} = Vec2b(arr: [x,x])
-
-proc vec4b*(a:array[0..3, bool]) : Vec4b {.inline.} = Vec4b(arr: [a[0], a[1], a[2], a[3]])
-proc vec3b*(a:array[0..2, bool]) : Vec3b {.inline.} = Vec3b(arr: [a[0], a[1], a[2]])
-proc vec2b*(a:array[0..1, bool]) : Vec2b {.inline.} = Vec2b(arr: [a[0], a[1]])
-
-# conversions
-proc  vec4f*[T]  (v : Vec[4, T]) : Vec4f  {.inline.} = Vec4f(  arr: [v.x.float32, v.y.float32, v.z.float32, v.w.float32])
-proc  vec3f*[T]  (v : Vec[3, T]) : Vec3f  {.inline.} = Vec3f(  arr: [v.x.float32, v.y.float32, v.z.float32])
-proc  vec2f*[T]  (v : Vec[2, T]) : Vec2f  {.inline.} = Vec2f(  arr: [v.x.float32, v.y.float32])
-proc  vec4d*[T]  (v : Vec[4, T]) : Vec4d  {.inline.} = Vec4d(  arr: [v.x.float64, v.y.float64, v.z.float64, v.w.float64])
-proc  vec3d*[T]  (v : Vec[3, T]) : Vec3d  {.inline.} = Vec3d(  arr: [v.x.float64, v.y.float64, v.z.float64])
-proc  vec2d*[T]  (v : Vec[2, T]) : Vec2d  {.inline.} = Vec2d(  arr: [v.x.float64, v.y.float64])
-proc  vec4i*[T]  (v : Vec[4, T]) : Vec4i  {.inline.} = Vec4i(  arr: [v.x.int32,   v.y.int32,   v.z.int32,   v.w.int32])
-proc  vec3i*[T]  (v : Vec[3, T]) : Vec3i  {.inline.} = Vec3i(  arr: [v.x.int32,   v.y.int32,   v.z.int32])
-proc  vec2i*[T]  (v : Vec[2, T]) : Vec2i  {.inline.} = Vec2i(  arr: [v.x.int32,   v.y.int32])
-proc  vec4l*[T]  (v : Vec[4, T]) : Vec4l  {.inline.} = Vec4l(  arr: [v.x.int64,   v.y.int64,   v.z.int64,   v.w.int64])
-proc  vec3l*[T]  (v : Vec[3, T]) : Vec3l  {.inline.} = Vec3l(  arr: [v.x.int64,   v.y.int64,   v.z.int64])
-proc  vec2l*[T]  (v : Vec[2, T]) : Vec2l  {.inline.} = Vec2l(  arr: [v.x.int64,   v.y.int64])
-proc  vec4ui*[T] (v : Vec[4, T]) : Vec4ui {.inline.} = Vec4ui( arr: [v.x.uint32,  v.y.uint32,  v.z.uint32,  v.w.uint32])
-proc  vec3ui*[T] (v : Vec[3, T]) : Vec3ui {.inline.} = Vec3ui( arr: [v.x.uint32,  v.y.uint32,  v.z.uint32])
-proc  vec2ui*[T] (v : Vec[2, T]) : Vec2ui {.inline.} = Vec2ui( arr: [v.x.uint32,  v.y.uint32])
-proc  vec4ul*[T] (v : Vec[4, T]) : Vec4ul {.inline.} = Vec4ul( arr: [v.x.uint64,  v.y.uint64,  v.z.uint64,  v.w.uint64])
-proc  vec3ul*[T] (v : Vec[3, T]) : Vec3ul {.inline.} = Vec3ul( arr: [v.x.uint64,  v.y.uint64,  v.z.uint64])
-proc  vec2ul*[T] (v : Vec[2, T]) : Vec2ul {.inline.} = Vec2ul( arr: [v.x.uint64,  v.y.uint64])
-proc  vec4b*[T]  (v : Vec[4, T]) : Vec4b  {.inline.} = Vec4b(  arr: [v.x.bool,    v.y.bool,    v.z.bool,    v.w.bool])
-proc  vec3b*[T]  (v : Vec[3, T]) : Vec3b  {.inline.} = Vec3b(  arr: [v.x.bool,    v.y.bool,    v.z.bool])
-proc  vec2b*[T]  (v : Vec[2, T]) : Vec2b  {.inline.} = Vec2b(  arr: [v.x.bool,    v.y.bool])
 
 
 #[
