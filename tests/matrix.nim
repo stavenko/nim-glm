@@ -5,7 +5,7 @@ import glm/vec
 proc compare*[M,N,T](a,b: Mat[M, N, T]): bool =
   for i in 0 ..< M:
     for j in 0 ..< N:
-      if abs(a[i][j]-b[i][j]) > 0.001:
+      if abs(a[i][j]-b[i][j]) > 1e-3:
         return false;
   return true
 

@@ -149,8 +149,8 @@ type
   Mat3x2ul* = Mat[3,2,uint64]
   Mat2x2ul* = Mat[2,2,uint64]
 
-proc diag*[M,N,T](m : Mat[M,N,T]): Vec[min(N,M), T] =
-  for i in 0 ..< min(N,M):
+proc diag*[M,N,T](m : Mat[M,N,T]): Vec[min(M,N), T] =
+  for i in 0 ..< min(M,N):
     result.arr[i] = m.arr[i].arr[i]
 
 proc `diag=`*[M,N,T,U](m : var Mat[M,N,T], v: Vec[U, T]) =
@@ -662,8 +662,8 @@ foreachZipImpl(matrixCompMult,`*`)
 proc mat4f*(mat: Mat4d): Mat4f {.inline.} = Mat4f(arr: [mat.arr[0].vec4f, mat.arr[1].vec4f, mat.arr[2].vec4f, mat.arr[3].vec4f])
 proc mat4d*(mat: Mat4f): Mat4d {.inline.} = Mat4d(arr: [mat.arr[0].vec4d, mat.arr[1].vec4d, mat.arr[2].vec4d, mat.arr[3].vec4d])
 
-template numCols*[N,M,T](t : typedesc[Mat[N,M,T]]): int = N
-template numRows*[N,M,T](t : typedesc[Mat[N,M,T]]): int = M
+template numCols*[M,N,T](t : typedesc[Mat[M,N,T]]): int = M
+template numRows*[M,N,T](t : typedesc[Mat[M,N,T]]): int = N
 
 when isMainModule:
 
@@ -712,5 +712,5 @@ when isMainModule:
 
   echo mm
 
-proc mix*[N,M,T](v1,v2: Mat[N,M,T]; a: T): Mat[N,M,T] =
+proc mix*[M,N,T](v1,v2: Mat[M,N,T]; a: T): Mat[M,N,T] =
   v1 * (1 - a) + v2 * a
