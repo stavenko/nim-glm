@@ -7,6 +7,11 @@ type
   Mat*[M,N: static[int]; T] = object
     arr*: array[M, Vec[N,T]]
 
+when defined(noUnicode):
+  const matrixDecoration = [" / ", " \\ ", "|  ", " \\ ", " / ", "  |"]
+else:
+  const matrixDecoration = ["⎡", "⎣", "⎢", "⎤", "⎦", "⎥"]
+
 proc `$`*(m: Mat): string =
   var cols: array[m.M, array[m.N, string]]
   for i, col in m.arr:
@@ -15,11 +20,11 @@ proc `$`*(m: Mat): string =
   result = ""
   for row in 0 ..< m.N:
     if row == 0:
-      result &= "⎡"
+      result &= matrixDecoration[0]
     elif row == m.N - 1:
-      result &= "⎣"
+      result &= matrixDecoration[1]
     else:
-      result &= "⎢"
+      result &= matrixDecoration[2]
 
     for col in 0 ..< m.M:
       if col != 0:
@@ -27,11 +32,13 @@ proc `$`*(m: Mat): string =
       result &= cols[col][row]
 
     if row == 0:
-      result &= "⎤\n"
+      result &= matrixDecoration[3]
     elif row == m.N - 1:
-      result &= "⎦\n"
+      result &= matrixDecoration[4]
     else:
-      result &= "⎥\n"
+      result &= matrixDecoration[5]
+
+    result &= "\n"
 
 proc `[]=`*[M,N,T](v:var Mat[M,N,T]; ix:int; c:Vec[N,T]): void {.inline.} =
     v.arr[ix] = c

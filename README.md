@@ -43,6 +43,19 @@ There is swizzling support:
     color.rgb = color.bgr
 
 
+matrices can be printed with echo, because they have tho `$` operator
+implemented. My default they use nice unicode characters for best
+visual representation.  But if you have probmles with them, you can
+pass ``-d:noUnicode`` to the compiler and the ``$`` functions will use
+a pure ASCII representation.
+
+          ASCII            unicode
+
+     / 3  7   3   0 \   ⎡3  7   3   0⎤
+    |  0  2  -1   1  |  ⎢0  2  -1   1⎥
+    |  5  4   3   2  |  ⎢5  4   3   2⎥
+     \ 6  6   4  -1 /   ⎣6  6   4  -1⎦
+
 perlin noise:
 
     import glm/vec
@@ -83,13 +96,15 @@ perlin noise:
 
 * Changes regarding based to C++glm and glsl
 
-  - the `mod` function is called `modulo` instead. `mod` is already an
-    operator in Nim and has it's own meaning that is very different to
-    the meaning of the `mod` function in glsl. The name `fmod` is also
-    not good, because `fmod` in c++ has also a different meaning.
-    Therefore `mod` is simply named `modulo` in nim-glm.  The other
-    mod functions all have a behavior towards zero, modulo does not
-    have this.
+  - the `mod` function is called `floorMod` instead. `mod` is already
+    an operator in Nim and has it's own meaning that is very different
+    to the meaning of the `mod` function in glsl. The name `fmod` is
+    also not good, because `fmod` in c++ has also a different meaning.
+    The function `floorMod` from the ``math`` package has the same
+    meaning as the `mod` function in glsl. Therefore `mod` is simply
+    named `floorMod` to be at least consistent with the Nim standard
+    library.  The `mod` operator always rounds towards zero, I
+    recommend to never use this operator.
 
   - swizzle support. Unlike c++, Nim allows pretty well to implement
     swizzling. So it is implemented with least amount of surprise.
