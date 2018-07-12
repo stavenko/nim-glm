@@ -7,7 +7,8 @@ type
   Mat*[M,N: static[int]; T] = object
     arr*: array[M, Vec[N,T]]
 
-when defined(noUnicode):
+when defined(noUnicode) or defined(windows):
+  # On a windows terminal, we are still in the 80s
   const matrixDecoration = [" / ", " \\ ", "|  ", " \\ ", " / ", "  |"]
 else:
   const matrixDecoration = ["⎡", "⎣", "⎢", "⎤", "⎦", "⎥"]
