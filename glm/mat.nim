@@ -149,9 +149,15 @@ type
   Mat3x2ul* = Mat[3,2,uint64]
   Mat2x2ul* = Mat[2,2,uint64]
 
-proc diag*[N,M,T](m : Mat[N,M,T]): Vec[min(N,M), T] =
+proc diag*[M,N,T](m : Mat[M,N,T]): Vec[min(N,M), T] =
   for i in 0 ..< min(N,M):
     result.arr[i] = m.arr[i].arr[i]
+
+proc `diag=`*[M,N,T,U](m : var Mat[M,N,T], v: Vec[U, T]) =
+  static:
+    assert U == min(M,N)
+  for i in 0 ..< U:
+    m.arr[i].arr[i] = v.arr[i]
 
 proc diag*[N,T](v : Vec[N,T]): Mat[N,N,T] =
   for i in 0 ..< N:
@@ -524,29 +530,29 @@ proc inverse*[T](m: Mat3[T]): Mat3[T]=
 
 proc inverse*[T](m: Mat4[T]):Mat4[T]=
   let
-    Coef00:T = (m[2,2]  * m[3,3]) - (m[3,2]  *  m[2,3])
-    Coef02:T = (m[1,2]  * m[3,3]) - (m[3,2]  *  m[1,3])
-    Coef03:T = (m[1,2]  * m[2,3]) - (m[2,2]  *  m[1,3])
+    Coef00:T = (m[2,2] * m[3,3]) - (m[3,2] * m[2,3])
+    Coef02:T = (m[1,2] * m[3,3]) - (m[3,2] * m[1,3])
+    Coef03:T = (m[1,2] * m[2,3]) - (m[2,2] * m[1,3])
 
-    Coef04:T = (m[2,1]  * m[3,3]) - (m[3,1]  *  m[2,3])
-    Coef06:T = (m[1,1]  * m[3,3]) - (m[3,1]  *  m[1,3])
-    Coef07:T = (m[1,1]  * m[2,3]) - (m[2,1]  *  m[1,3])
+    Coef04:T = (m[2,1] * m[3,3]) - (m[3,1] * m[2,3])
+    Coef06:T = (m[1,1] * m[3,3]) - (m[3,1] * m[1,3])
+    Coef07:T = (m[1,1] * m[2,3]) - (m[2,1] * m[1,3])
 
-    Coef08:T = (m[2,1]  * m[3,2]) - (m[3,1]  *  m[2,2])
-    Coef10:T = (m[1,1]  * m[3,2]) - (m[3,1]  *  m[1,2])
-    Coef11:T = (m[1,1]  * m[2,2]) - (m[2,1]  *  m[1,2])
+    Coef08:T = (m[2,1] * m[3,2]) - (m[3,1] * m[2,2])
+    Coef10:T = (m[1,1] * m[3,2]) - (m[3,1] * m[1,2])
+    Coef11:T = (m[1,1] * m[2,2]) - (m[2,1] * m[1,2])
 
-    Coef12:T = (m[2,0]  * m[3,3]) - (m[3,0]  *  m[2,3])
-    Coef14:T = (m[1,0]  * m[3,3]) - (m[3,0]  *  m[1,3])
-    Coef15:T = (m[1,0]  * m[2,3]) - (m[2,0]  *  m[1,3])
+    Coef12:T = (m[2,0] * m[3,3]) - (m[3,0] * m[2,3])
+    Coef14:T = (m[1,0] * m[3,3]) - (m[3,0] * m[1,3])
+    Coef15:T = (m[1,0] * m[2,3]) - (m[2,0] * m[1,3])
 
-    Coef16:T = (m[2,0]  * m[3,2]) - (m[3,0]  *  m[2,2])
-    Coef18:T = (m[1,0]  * m[3,2]) - (m[3,0]  *  m[1,2])
-    Coef19:T = (m[1,0]  * m[2,2]) - (m[2,0]  *  m[1,2])
+    Coef16:T = (m[2,0] * m[3,2]) - (m[3,0] * m[2,2])
+    Coef18:T = (m[1,0] * m[3,2]) - (m[3,0] * m[1,2])
+    Coef19:T = (m[1,0] * m[2,2]) - (m[2,0] * m[1,2])
 
-    Coef20:T = (m[2,0]  * m[3,1]) - (m[3,0]  *  m[2,1])
-    Coef22:T = (m[1,0]  * m[3,1]) - (m[3,0]  *  m[1,1])
-    Coef23:T = (m[1,0]  * m[2,1]) - (m[2,0]  *  m[1,1])
+    Coef20:T = (m[2,0] * m[3,1]) - (m[3,0] * m[2,1])
+    Coef22:T = (m[1,0] * m[3,1]) - (m[3,0] * m[1,1])
+    Coef23:T = (m[1,0] * m[2,1]) - (m[2,0] * m[1,1])
 
   var
     Fac0 = vec4(Coef00, Coef00, Coef02, Coef03)
