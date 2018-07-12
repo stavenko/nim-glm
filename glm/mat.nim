@@ -2,7 +2,8 @@ when defined(SomeReal) and not defined(SomeFloat):
   type SomeFloat = SomeReal
 
 import vec
-
+import typetraits
+import strutils
 type
   Mat*[M,N: static[int]; T] = object
     arr*: array[M, Vec[N,T]]
@@ -15,23 +16,19 @@ proc `$`*(m: Mat): string =
   result = ""
   for row in 0 ..< m.N:
     if row == 0:
-      result &= "⎡"
-    elif row == m.N - 1:
-      result &= "⎣"
+      result &= "||"#"Mat[$#,$#,$#](arr: [\n" % [$m.M,$m.N,m.T.name]
     else:
-      result &= "⎢"
+      result &= " |" #"  Vec[$#,$#](arr: [" % [$m.N,m.T.name]
 
     for col in 0 ..< m.M:
       if col != 0:
         result &= "  "
       result &= cols[col][row]
 
-    if row == 0:
-      result &= "⎤\n"
-    elif row == m.N - 1:
-      result &= "⎦\n"
+    if row == m.N - 1:
+      result &= "||\n"#"])])\n"
     else:
-      result &= "⎥\n"
+      result &= "|\n"#"]),\n"
 
 proc `[]=`*[M,N,T](v:var Mat[M,N,T]; ix:int; c:Vec[N,T]): void {.inline.} =
     v.arr[ix] = c
@@ -714,3 +711,23 @@ when isMainModule:
 
 proc mix*[M,N,T](v1,v2: Mat[M,N,T]; a: T): Mat[M,N,T] =
   v1 * (1 - a) + v2 * a
+
+
+when isMainModule:
+  import vec
+  block:
+    var mat = 
+      mat4f(
+        vec4f(1, 0, 0, 0),
+        vec4f(0, 1, 0, 0),
+        vec4f(0, 0, 1, 0),
+        vec4f(0, 0, 0, 1),)
+    var mat2 = 
+      Mat[4,4,float](arr:[
+          Vec[4,float](arr:[1.0, 0.0, 0.0, 0.0]),
+          Vec[4,float](arr:[0.0, 1.0, 0.0, 0.0]),
+          Vec[4,float](arr:[0.0, 0.0, 1.0, 0.0]),
+          Vec[4,float](arr:[0.0, 0.0, 0.0, 1.0])])
+      
+    echo mat
+    echo mat2
