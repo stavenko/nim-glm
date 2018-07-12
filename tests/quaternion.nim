@@ -19,7 +19,7 @@ proc epsilonEqual(a,b: Mat4f; epsilon: float32): Mat4[bool] =
 proc angleAxis(angle: float32, axis: Vec3f): Quatf =
   quatf(axis, angle)
 
-proc all[N,M](arg: Mat[N,M,bool]): bool =
+proc all[M,N](arg: Mat[M,N,bool]): bool =
   for x in arg.arr:
     if not all(x):
       return false

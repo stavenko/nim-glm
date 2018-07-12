@@ -1,9 +1,10 @@
 import glm, sdl2/sdl, opengl
 import unittest
 
-proc compare*[N,M,T](a,b: Mat[N, M, T]): bool =
-  for i in 0 ..< N:
-    for j in 0 ..< M:
+
+proc compare*[M,N,T](a,b: Mat[M, N, T]): bool =
+  for i in 0 ..< M:
+    for j in 0 ..< N:
       if abs(a[i][j]-b[i][j]) > 1e-5:
         return false;
   return true

@@ -1,3 +1,6 @@
+when defined(SomeReal) and not defined(SomeFloat):
+  type SomeFloat = SomeReal
+
 import globals
 import mat
 import vec
@@ -184,7 +187,7 @@ else:
     proc lookAt*[T](eye,center,up:Vec3[T]):Mat4[T]=
         lookAtRH(eye, center, up)
 
-proc frustum*(left, right, bottom, top, near, far: SomeReal): Mat4[SomeReal] =
+proc frustum*(left, right, bottom, top, near, far: SomeFloat): Mat4[SomeFloat] =
   result[0][0] =       (2*near)/(right-left)
   result[1][1] =       (2*near)/(top-bottom)
   result[2][2] =     (far+near)/(near-far)

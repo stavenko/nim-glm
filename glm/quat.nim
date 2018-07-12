@@ -1,4 +1,5 @@
-#quaternion
+when defined(SomeReal) and not defined(SomeFloat):
+  type SomeFloat = SomeReal
 
 import vec, mat, math
 
@@ -343,7 +344,6 @@ proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
   result[2][3] = -1
   result[3][2] =   (2*far*near)/(near-far)
 ]#
-
 
 when isMainModule:
   let q1 = quatf(1,2,3,4)
