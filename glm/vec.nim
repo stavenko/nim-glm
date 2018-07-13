@@ -496,10 +496,10 @@ template vecGen(U:untyped,V:typed):typed=
   ## ``U`` suffix
   ## ``V`` valType
   ##
-  type 
-    `Vec4 U`* {.inject.} = Vec[4, V]
-    `Vec3 U`* {.inject.} = Vec[3, V]
-    `Vec2 U`* {.inject.} = Vec[2, V]
+  type
+    `Vec4 U`* {.inject.} = Vec4[V]
+    `Vec3 U`* {.inject.} = Vec3[V]
+    `Vec2 U`* {.inject.} = Vec2[V]
   proc `vec4 U`*(x, y, z, w: V)          : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x,   y,   z,   w])
   proc `vec4 U`*(v: `Vec3 U`, w: V)      : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [v.x, v.y, v.z,   w])
   proc `vec4 U`*(x: V, v: `Vec3 U`)      : `Vec4 U` {.inject, inline.} = `Vec4 U`(arr: [  x, v.x, v.y, v.z])
@@ -522,9 +522,9 @@ template vecGen(U:untyped,V:typed):typed=
   proc `vec2 U`*(a: array[0..1, V]): `Vec2 U` {.inject, inline.} = `Vec2 U`(arr: [a[0], a[1]])
 
   ## conversions
-  proc  `vec4 U`*[T](v: Vec[4, T]): `Vec4 U`  {.inline.} = `Vec4 U`(  arr: [V(v.x), V(v.y), V(v.z), V(v.w)])
-  proc  `vec3 U`*[T](v: Vec[3, T]): `Vec3 U`  {.inline.} = `Vec3 U`(  arr: [V(v.x), V(v.y), V(v.z)])
-  proc  `vec2 U`*[T](v: Vec[2, T]): `Vec2 U`  {.inline.} = `Vec2 U`(  arr: [V(v.x), V(v.y)])
+  proc  `vec4 U`*[T](v: Vec[4, T]): `Vec4 U`  {.inject, inline.} = `Vec4 U`(  arr: [V(v.x), V(v.y), V(v.z), V(v.w)])
+  proc  `vec3 U`*[T](v: Vec[3, T]): `Vec3 U`  {.inject, inline.} = `Vec3 U`(  arr: [V(v.x), V(v.y), V(v.z)])
+  proc  `vec2 U`*[T](v: Vec[2, T]): `Vec2 U`  {.inject, inline.} = `Vec2 U`(  arr: [V(v.x), V(v.y)])
 
 vecGen f, float32
 vecGen d, float64
