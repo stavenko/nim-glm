@@ -1,4 +1,4 @@
-when defined(SomeReal) and not defined(SomeFloat):
+when not compiles(SomeFloat):
   type SomeFloat = SomeReal
 
 import macros, math

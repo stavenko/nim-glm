@@ -1,4 +1,4 @@
-when defined(SomeReal) and not defined(SomeFloat):
+when not compiles(SomeFloat):
   type SomeFloat = SomeReal
 
 import vec, mat, math
@@ -40,11 +40,11 @@ proc `$`*[T](q : Quat[T]) : string =
     result &= $val
   result &= ")"
 template genProp(U:untyped,N:typed):untyped=
-  proc U*[T](q : Quat[T]) : T {.inject.} = 
+  proc U*[T](q : Quat[T]) : T {.inject.} =
     q.arr[N]
-  proc U*[T](q : var Quat[T]) : var T {.inject.} = 
+  proc U*[T](q : var Quat[T]) : var T {.inject.} =
     q.arr[N]
-  proc `U=`*[T](q : var Quat[T]; v: T) : void {.inject.} = 
+  proc `U=`*[T](q : var Quat[T]; v: T) : void {.inject.} =
     q[N] = v
 genProp x, 0
 genProp y, 1
@@ -328,7 +328,7 @@ template quatGen(U:untyped,V:typed):untyped=
   proc `quat U`*(u,v: `Vec3 U`): `Quat U` {.inject.} = quat(u,v)
   proc `quat U`*(mat: `Mat3 U`): `Quat U` {.inject.} = quat[V](mat)
   proc `quat U`*(): `Quat U` {.inject.} = `Quat U`(arr: [V(0.0),0,0,1])
-  
+
 
 quatGen f, float32
 quatGen d, float64
