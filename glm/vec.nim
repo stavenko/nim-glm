@@ -467,8 +467,7 @@ proc length*(v: Vec): auto = sqrt(dot(v,v))
 proc cross*[T](v1,v2:Vec[3,T]): Vec[3,T] =
   v1.yzx * v2.zxy - v1.zxy * v2.yzx
 
-proc distance*[N,T](v1,v2: Vec[N,T]): Vec[N,T] = length(v2 - v1)
-
+proc distance*[N,T](v1,v2: Vec[N,T]): T = length(v2 - v1)
 
 proc faceforward*[N,T](n,i,nref: Vec[N,T]): Vec[N,T] =
   ## return a vector pointing in the same direction as another
