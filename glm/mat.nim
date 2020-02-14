@@ -57,9 +57,7 @@ proc `[]`*[M,N,T](v: var Mat[M,N,T]; ix, iy: int): var T {.inline.} =
 
 proc caddr*[M,N,T](m: var Mat[M,N,T]): ptr T = m.arr[0].arr[0].addr
 
-##############
-# type alias #
-##############
+# type alias
 
 type
   Mat4x4*[T] = Mat[4,4,T]
@@ -90,9 +88,7 @@ proc diag*[N,T](v : Vec[N,T]): Mat[N,N,T] =
   for i in 0 ..< N:
     result.arr[i].arr[i] = v.arr[i]
 
-####################
-# type constructor #
-####################
+# type constructor
 
 # generic
 proc mat4*[T](a,b,c,d: Vec4[T]) : Mat4[T] =
