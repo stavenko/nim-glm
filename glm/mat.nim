@@ -13,8 +13,8 @@ when defined(noUnicode) or defined(windows):
 else:
   const matrixDecoration = ["⎡", "⎣", "⎢", "⎤", "⎦", "⎥"]
 
-proc `$`*(m: Mat): string =
-  var cols: array[m.M, array[m.N, string]]
+proc `$`*[M,N,T](m: Mat[M,N,T]): string =
+  var cols: array[M, array[N, string]]
   for i, col in m.arr:
     cols[i] = columnFormat(col)
 
@@ -135,42 +135,52 @@ proc mat2x2*[T](a,b: Vec2[T]) : Mat2x2[T] =
   result.arr = [a,b]
 
 
-proc mat4*[T](v: Vec4[T]): Mat4[T] =
+proc mat4*[T](v: Vec4[T]): Mat4[T] {.noinit, inline.} =
   for i in 0 .. 3:
-    result.arr[i].arr[i] = v.arr[i]
+    for j in 0 .. 3:
+      result.arr[i].arr[j] = T(i == j) * v.arr[i]
 
-proc mat3*[T](v: Vec3[T]): Mat3[T] =
+proc mat3*[T](v: Vec3[T]): Mat3[T] {.noinit, inline.} =
   for i in 0 .. 2:
-    result.arr[i].arr[i] = v.arr[i]
+    for j in 0 .. 2:
+      result.arr[i].arr[j] = T(i == j) * v.arr[i]
 
-proc mat2*[T](v: Vec2[T]): Mat2[T] =
+proc mat2*[T](v: Vec2[T]): Mat2[T] {.noinit, inline.} =
   for i in 0 .. 1:
-    result.arr[i].arr[i] = v.arr[i]
+    for j in 0 .. 1:
+      result.arr[i].arr[j] = T(i == j) * v.arr[i]
 
 
-proc mat4*[T](s: T): Mat4[T] =
+proc mat4*[T](s: T): Mat4[T] {.noinit, inline.} =
   for i in 0 .. 3:
-    result.arr[i].arr[i] = s
+    for j in 0 .. 3:
+      result.arr[i].arr[j] = T(i == j) * s
 
-proc mat3*[T](s: T): Mat3[T] =
+proc mat3*[T](s: T): Mat3[T] {.noinit, inline.} =
   for i in 0 .. 2:
-    result.arr[i].arr[i] = s
+    for j in 0 .. 2:
+      result.arr[i].arr[j] = T(i == j) * s
 
-proc mat2*[T](s: T): Mat2[T] =
+proc mat2*[T](s: T): Mat2[T] {.noinit, inline.} =
   for i in 0 .. 1:
-    result.arr[i].arr[i] = s
+    for j in 0 .. 1:
+      result.arr[i].arr[j] = T(i == j) * s
 
-proc mat4*[T]() : Mat4[T] =
+proc mat4*[T]() : Mat4[T] {.noinit, inline.} =
   for i in 0 .. 3:
-    result.arr[i].arr[i] = T(1)
+    for j in 0 .. 3:
+      result.arr[i].arr[j] = T(i == j)
 
-proc mat3*[T]() : Mat3[T] =
+proc mat3*[T]() : Mat3[T] {.noinit, inline.} =
   for i in 0 .. 2:
-    result.arr[i].arr[i] = T(1)
+    for j in 0 .. 2:
+      result.arr[i].arr[j] = T(i == j)
 
-proc mat2*[T]() : Mat2[T] =
+proc mat2*[T]() : Mat2[T] {.noinit, inline.} =
   for i in 0 .. 1:
-    result.arr[i].arr[i] = T(1)
+    for j in 0 .. 1:
+      result.arr[i].arr[j] = T(i == j)
+
 template genMats(suffix:untyped,valtype:typed):untyped=
   type
     `Mat4 suffix`*   {.inject.} = Mat[4, 4, valtype]

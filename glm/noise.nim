@@ -734,7 +734,7 @@ when isMainModule:
 
   import typetraits
 
-  proc drawNoise[T : SomeReal](applyNoise: proc(x,y: T): T): void =
+  proc drawNoise[T : SomeFloat](applyNoise: proc(x,y: T): T): void =
     var h: T = -Inf
     var l: T = Inf
 
@@ -785,3 +785,32 @@ when isMainModule:
 
   drawNoise(float32)
   drawNoise(float64)
+
+
+  import times, random
+  proc benchmark() =
+    echo "benchmark"
+
+    var accu: float32 # accumulate garbage
+
+    var samplePos: Vec4f
+
+    let t = getTime()
+
+    for i in 0 ..< 10_000_000:
+      samplePos = vec4f(
+        rand(100.0f),
+        rand(100.0f),
+        rand(100.0f),
+        rand(100.0f)
+      )
+      accu += simplex[float32](samplePos)
+
+    let duration = getTime() - t
+
+    echo accu # the content is garbage, but when not printed it's calculation might get eleminated.
+    echo "time: ", duration
+    # non release: 2 minutes, 15 seconds, 732 milliseconds, 415 microseconds, and 820 nanoseconds
+    #     release: 3 seconds, 915 milliseconds, 559 microseconds, and 718 nanoseconds
+
+  benchmark()

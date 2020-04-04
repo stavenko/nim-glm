@@ -43,8 +43,8 @@ There is swizzling support:
     color.rgb = color.bgr
 
 
-matrices can be printed with echo, because they have tho `$` operator
-implemented. My default they use nice unicode characters for best
+matrices can be printed with echo, because they have the `$` operator
+implemented. By default they use nice unicode characters for best
 visual representation.  But if you have probmles with them, you can
 pass ``-d:noUnicode`` to the compiler and the ``$`` functions will use
 a pure ASCII representation.
