@@ -131,9 +131,7 @@ proc `[]`*[N,T](v: Vec[N,T]; ix: int): T {.inline, noinit.} =
 proc `[]`*[N,T](v: var Vec[N,T]; ix: int): var T {.inline, noinit.} =
   v.arr[ix]
 
-#########################
-# constructor functions #
-#########################
+# constructor functions
 
 proc vec4*[T](x,y,z,w:T)         : Vec4[T] {.inline.} = Vec4[T](arr: [  x,   y,   z,   w])
 proc vec4*[T](v:Vec3[T],w:T)     : Vec4[T] {.inline.} = Vec4[T](arr: [v.x, v.y, v.z,   w])
@@ -261,9 +259,7 @@ proc caddr*[N,T](v:var Vec[N,T]): ptr T {.inline.} =
   ## Address getter to pass vector to native-C openGL functions as pointers
   v.arr[0].addr
 
-####################################
-# Angle and Trigonometry Functions #
-####################################
+# Angle and Trigonometry Functions
 
 template foreachImpl(fun: untyped): untyped =
   proc fun*[N,T](v: Vec[N,T]): Vec[N,T] {.inline, noinit.} =
@@ -302,9 +298,7 @@ proc degrees*(v : SomeFloat): SomeFloat {.inline, noinit.} =
 foreachImpl(radians)
 foreachImpl(degrees)
 
-#########################
-# Exponential Functions #
-#########################
+# Exponential Functions
 
 export math.pow
 
@@ -321,9 +315,7 @@ foreachImpl(ln)
 foreachImpl(log2)
 foreachImpl(sqrt)
 
-####################
-# common functions #
-####################
+# common functions
 
 export math.ceil, math.round, math.floor
 
@@ -453,9 +445,7 @@ proc step*[N,T](edge: T; x: Vec[N,T]): Vec[N,T] {.inline, noinit.} =
     result.arr[i] = T(x.arr[i] >= edge)
 
 
-#######################
-# Geometric Functions #
-#######################
+# Geometric Functions
 
 proc dot*[N,T](u,v: Vec[N,T]): T {. inline, noinit .} =
   # TODO this really should have some simd optimization
@@ -489,9 +479,7 @@ proc refract*[N,T](i,n: Vec[N,T]; eta: T): Vec[N,T] {.inline, noinit.} =
   if k >= 0.0:
     result = eta * i - (eta * dot(n, i) + sqrt(k)) * n;
 
-###################
-# more type names #
-###################
+# more type names
 
 type
   Vec4u8* = Vec[4, uint8]

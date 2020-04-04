@@ -99,20 +99,20 @@ perlin noise:
   - the `mod` function is called `floorMod` instead. `mod` is already
     an operator in Nim and has it's own meaning that is very different
     to the meaning of the `mod` function in glsl. The name `fmod` is
-    also not good, because `fmod` in c++ has also a different meaning.
+    not good either, because `fmod` in c++ has a different meaning as well.
     The function `floorMod` from the ``math`` package has the same
     meaning as the `mod` function in glsl. Therefore `mod` is simply
     named `floorMod` to be at least consistent with the Nim standard
-    library.  The `mod` operator always rounds towards zero, I
+    library.  The `mod` operator always rounds towards zero, I personally
     recommend to never use this operator.
 
   - swizzle support. Unlike c++, Nim allows pretty well to implement
-    swizzling. So it is implemented with least amount of surprise.
+    swizzling. So it is implemented with the least amount of surprise.
 
   - simd instructions are not implemented.  You could hope that some
     day the C compiler will be smart enough to inject them, but I would
     not bet on it.
 
   - glm in c++ has a lot more extensions that are not yet ported over
-    to the Nim version. They are added when needed. That does not mean
-    that this library is lacking any important features.
+    to the Nim version. They are added when needed. On the other hand,
+    this library is feature complete in terms of featurs that come from GLSL.
