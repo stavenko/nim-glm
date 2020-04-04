@@ -1,3 +1,5 @@
+##Vector module contains all types and functions to manipulate vectors
+
 when not compiles(SomeFloat):
   type SomeFloat = SomeReal
 
