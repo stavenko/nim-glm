@@ -187,15 +187,6 @@ else:
     proc lookAt*[T](eye,center,up:Vec3[T]):Mat4[T]=
         lookAtRH(eye, center, up)
 
-proc frustum*(left, right, bottom, top, near, far: SomeFloat): Mat4[SomeFloat] =
-  result[0][0] =       (2*near)/(right-left)
-  result[1][1] =       (2*near)/(top-bottom)
-  result[2][2] =     (far+near)/(near-far)
-  result[2][0] =   (right+left)/(right-left)
-  result[2][1] =   (top+bottom)/(top-bottom)
-  result[2][3] = -1
-  result[3][2] =   (2*far*near)/(near-far)
-
 when isMainModule:
     var m = mat4d()
     var nm = translate(m, vec3(5.0, 5.0, 5.0))
