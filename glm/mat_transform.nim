@@ -187,6 +187,21 @@ else:
     proc lookAt*[T](eye,center,up:Vec3[T]):Mat4[T]=
         lookAtRH(eye, center, up)
 
+
+let lookAtStr = """
+⎡ 0.0                  0.0                  1.0  -0.0⎤
+⎢-0.7071067811865476   0.7071067811865476   0.0  -0.0⎥
+⎢-0.7071067811865476  -0.7071067811865476  -0.0   0.0⎥
+⎣ 0.0                  0.0                  0.0   1.0⎦
+"""
+
+let frustumStr = """
+⎡4.0  0.0   0.1     0.0⎤
+⎢0.0  1.0   0.25    0.0⎥
+⎢0.0  0.0  -2.0   -15.0⎥
+⎣0.0  0.0  -1.0     0.0⎦
+"""
+
 when isMainModule:
     var m = mat4d()
     var nm = translate(m, vec3(5.0, 5.0, 5.0))
@@ -195,4 +210,10 @@ when isMainModule:
     var v = vec4(1.0,0.0,0.0,1.0)
     var o = ortho(-5.0, 5, -5,5, 0.01, 100)
     var la = lookAt(vec3(0.0, 0,0), vec3(50.0, 50.0, 0.0), vec3(0.0, 1, 0.0))
-    echo mat.`$`(la)
+    echo la
+    doAssert $la == lookAtStr
+
+    let frustumMat = frustum(-1.125, 1.375, -03.75, 06.25, 5, 15)
+    echo "frustum matrix:"
+    echo frustumMat
+    doAssert $frustumMat == frustumStr
