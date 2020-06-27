@@ -730,6 +730,8 @@ proc simplex*[T](v: Vec4[T]): T =
 
 
 when isMainModule:
+  # for performance analysis with `perf`
+  {.passC: "-fno-omit-frame-pointer".}
   var line = newStringOfCap(80)
 
   import typetraits
@@ -810,6 +812,7 @@ when isMainModule:
 
     echo accu # the content is garbage, but when not printed it's calculation might get eleminated.
     echo "time: ", duration
+    # time: 5 seconds, 596 milliseconds, 10 microseconds, and 646 nanoseconds
     # non release: 2 minutes, 15 seconds, 732 milliseconds, 415 microseconds, and 820 nanoseconds
     #     release: 3 seconds, 915 milliseconds, 559 microseconds, and 718 nanoseconds
 

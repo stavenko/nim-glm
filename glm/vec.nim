@@ -105,7 +105,7 @@ mathPerComponent(`*`)
 mathPerComponent(`div`)
 mathPerComponent(`mod`)
 
-template mathInpl(opName): untyped =
+template mathInpl(opName: untyped): untyped =
   proc opName*[N,T](v: var Vec[N,T]; u: Vec[N,T]): void =
     for ii in 0 ..< N:
       opName(v.arr[ii], u.arr[ii])
@@ -401,9 +401,6 @@ proc floorMod*[N: static[int]; T: SomeFloat](x: Vec[N,T]; y: T): Vec[N,T] {.inli
   ## `floorMod` returns the value of x modulo y. This is computed as x - y * floor(x/y).
   x - y * floor(x / y)
 
-{.deprecated: [fmod: floorMod].}
-{.deprecated: [modulo: floorMod].}
-
 proc sign*[T](x: T): T {.inline, noinit.} =
   T(x > 0) - T(x < 0)
 
@@ -486,7 +483,7 @@ proc refract*[N,T](i,n: Vec[N,T]; eta: T): Vec[N,T] {.inline, noinit.} =
 type
   Vec4u8* = Vec[4, uint8]
 
-template vecGen(U:untyped,V:typed):typed=
+template vecGen(U:untyped,V:typed) =
   ## ``U`` suffix
   ## ``V`` valType
   ##
