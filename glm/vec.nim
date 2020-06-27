@@ -84,18 +84,37 @@ proc columnFormat*[N,T](v: Vec[N, T]) : array[N,string] =
   else:
     result = v.arr.alignLeft
 
+proc substituteIdent(body, ident, substitution: NimNode): NimNode =
+  if body.kind in {nnkSym, nnkOpenSymChoice, nnkClosedSymChoice, nnkIdent}:
+    if body.eqIdent ident:
+      result = substitution
+    else:
+      result = body
+  else:
+    result = newNimNode(body.kind)
+    for child in body.items:
+      result.add substituteIdent(child, ident, substitution)
+
+macro unrollFor(loopVar: untyped, maxValue: static int, body: untyped): untyped =
+  result = newStmtList()
+  for i in 0 ..< maxValue:
+    result.add substituteIdent(body, loopVar, newLit(i))
+
 template mathPerComponent(op: untyped): untyped =
   # TODO this is a good place for simd optimization
-  proc op*[N,T](v,u: Vec[N,T]): Vec[N,T] {.inline, noinit.} =
-    for ii in 0 ..< N:
+  proc op*[N,T](v,u: Vec[N,T]): Vec[N,T] {.noinit.} =
+    #for ii in 0 ..< N:
+    unrollFor ii, N:
       result.arr[ii] = op(v.arr[ii], u.arr[ii])
 
-  proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] {.inline, noinit.} =
-    for ii in 0 ..< N:
+  proc op*[N,T](v: Vec[N,T]; val: T): Vec[N,T] {.noinit.} =
+    #for ii in 0 ..< N:
+    unrollFor ii, N:
       result.arr[ii] = op(v.arr[ii], val)
 
-  proc op*[N,T](val: T; v: Vec[N,T]): Vec[N,T] {.inline, noinit.} =
-    for ii in 0 ..< N:
+  proc op*[N,T](val: T; v: Vec[N,T]): Vec[N,T] {.noinit.} =
+    #for ii in 0 ..< N:
+    unrollFor ii, N:
       result.arr[ii] = op(val, v.arr[ii])
 
 mathPerComponent(`+`)
