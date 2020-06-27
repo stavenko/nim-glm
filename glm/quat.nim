@@ -333,18 +333,6 @@ template quatGen(U:untyped,V:typed):untyped=
 quatGen f, float32
 quatGen d, float64
 
-
-#[
-proc frustum*[T](left, right, bottom, top, near, far: T): Mat4[T] =
-  result[0][0] =       (2*near)/(right-left)
-  result[1][1] =       (2*near)/(top-bottom)
-  result[2][2] =     (far+near)/(near-far)
-  result[2][0] =   (right+left)/(right-left)
-  result[2][1] =   (top+bottom)/(top-bottom)
-  result[2][3] = -1
-  result[3][2] =   (2*far*near)/(near-far)
-]#
-
 when isMainModule:
   let q1 = quatf(1,2,3,4)
   let q2 = inverse(q1)
