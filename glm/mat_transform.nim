@@ -47,8 +47,8 @@ proc rotate*[T](m:Mat4x4[T]; angle:T, axis:Vec3[T]): Mat4x4[T] {.inline.} =
     result[2] = m[0] * Rotate[2,0] + m[1] * Rotate[2,1] + m[2] * Rotate[2,2]
     result[3] = m[3]
 
-proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T], angle:T): Mat4x4[T] {.deprecated.} =
-  ## Please use the ``angle`` as first argument.
+proc rotate*[T](m:Mat4x4[T]; axis:Vec3[T], angle:T): Mat4x4[T] {.
+    deprecated: "Please swap `axis` and `angle` argument.".} =
   m.rotate(angle,axis)
 
 proc rotate*[T](m:Mat4x4[T]; angle,x,y,z:T): Mat4x4[T] = rotate(m, angle, vec3(x,y,z))
