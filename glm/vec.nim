@@ -310,14 +310,8 @@ foreachImpl(sinh)
 foreachImpl(cosh)
 foreachImpl(tanh)
 
-proc radians*(v : SomeFloat): SomeFloat {.inline, noinit.} =
-  v * math.Pi / 180
-
-proc degrees*(v : SomeFloat): SomeFloat {.inline, noinit.} =
-  v * 180 / math.Pi
-
-foreachImpl(radians)
-foreachImpl(degrees)
+foreachImpl(radToDeg)
+foreachImpl(degToRad)
 
 # Exponential Functions
 
