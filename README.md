@@ -6,9 +6,9 @@ Here's some examples
     var
         v = vec3(1.0, 5.0, 6.0)
         a = vec3(2.0, 2.0, 5.0)
-        v4 = vec4(v, 1.0);
+        v4 = vec4(v, 1.0)
         c = cross(v,a)
-        m = rotate(mat4(), 5.0, vec3(1.0, 0.0, 0.0))
+        m = rotate(mat4[float](), 5.0, vec3(1.0, 0.0, 0.0))
         r = v4 * m
 
 
