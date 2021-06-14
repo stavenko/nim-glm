@@ -257,7 +257,7 @@ proc slerp*[T](x,y: Quat[T]; a: T): Quat[T] =
     let angle: T = arccos(cosTheta);
     return (sin((T(1) - a) * angle) * x + sin(a * angle) * z) / sin(angle)
 
-proc conjugate[T](q: Quat[T]): Quat[T] =
+proc conjugate*[T](q: Quat[T]): Quat[T] =
   result.arr[0] = -q[0]
   result.arr[1] = -q[1]
   result.arr[2] = -q[2]
