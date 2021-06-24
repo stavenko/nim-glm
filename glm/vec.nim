@@ -538,8 +538,12 @@ template vecGen(U:untyped,V:typed) =
 
 vecGen f, float32
 vecGen d, float64
+vecGen i8, int8
+vecGen i16, int16
 vecGen i, int32
 vecGen l, int64
+vecGen ui8, uint8
+vecGen ui16, uint16
 vecGen ui, uint32
 vecGen ul, uint64
 vecGen b, bool
