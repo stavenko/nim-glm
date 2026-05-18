@@ -1,5 +1,7 @@
 ##Vector module contains all types and functions to manipulate vectors
 
+{.push stack_trace: off.}
+
 when not compiles(SomeFloat):
   type SomeFloat = SomeReal
 
@@ -672,6 +674,8 @@ comparisonOpPerComponent(`.>=`,`>=`)
 comparisonOpPerComponent(`.>`, `>` )
 comparisonOpPerComponent(`.!=`,`!=`)
 
+{.pop.}
+
 when isMainModule:
   var v0 = vec3(1.0, 0.5, 0)
   var u0 = vec3(1.0, 1.0, 0)
@@ -691,3 +695,4 @@ when isMainModule:
     ["   1", "  10", " 100", "1000"]
   doAssert columnFormat(vec4("a", "ab", "abc", "abcd")) ==
     ["a   ", "ab  ", "abc ", "abcd"]
+
