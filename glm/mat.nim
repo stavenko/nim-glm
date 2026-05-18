@@ -1,6 +1,8 @@
 when not compiles(SomeFloat):
   type SomeFloat = SomeReal
 
+{.push stack_trace: off.}
+
 import vec
 
 type
@@ -387,6 +389,11 @@ proc mat4d*(mat: Mat4f): Mat4d {.inline.} = Mat4d(arr: [mat.arr[0].vec4d, mat.ar
 template numCols*[M,N,T](t : typedesc[Mat[M,N,T]]): int = M
 template numRows*[M,N,T](t : typedesc[Mat[M,N,T]]): int = N
 
+proc mix*[M,N,T](v1,v2: Mat[M,N,T]; a: T): Mat[M,N,T] =
+  v1 * (1 - a) + v2 * a
+
+{.pop.}
+  
 when isMainModule:
 
   var mats : array[2, Mat4f]
@@ -433,6 +440,3 @@ when isMainModule:
   mm[1] = vec2(33)
 
   echo mm
-
-proc mix*[M,N,T](v1,v2: Mat[M,N,T]; a: T): Mat[M,N,T] =
-  v1 * (1 - a) + v2 * a
